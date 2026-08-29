@@ -17,8 +17,10 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+
   accounts      Account[]
   sessions      Session[]
+  jobs          Job[]     @relation("postedJobs")
 }
 
 model Account {
@@ -55,3 +57,18 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  company     String
+  location    String
+  type        String
+  description String   @db.Text
+  salary      String?
+  
+  postedAt    DateTime @default(now())
+  postedBy    User     @relation("postedJobs", fields: [postedById], references: [id])
+  postedById  String
+}
+

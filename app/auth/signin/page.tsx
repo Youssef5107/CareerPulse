@@ -17,45 +17,40 @@ export default function SignInPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitted Payload:", { role, ...formData });
+    console.log("Submitted SignIn Payload:", { role, ...formData });
   };
 
   return (
-    <div className="h-full bg-background text-on-background antialiased flex items-center justify-center relative overflow-hidden min-h-screen">
-      {/* Layered Gradient Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-surface-container-low via-background to-secondary-container opacity-40"></div>
-        <div className="absolute top-0 right-0 -mr-[20%] -mt-[10%] w-[60%] h-[60%] rounded-full bg-primary-container blur-[120px] opacity-20"></div>
-        <div className="absolute bottom-0 left-0 -ml-[20%] -mb-[10%] w-[60%] h-[60%] rounded-full bg-tertiary blur-[100px] opacity-10"></div>
-      </div>
+    <div className="bg-background text-on-background font-sans antialiased gradient-bg flex flex-col min-h-screen">
+      <main className="flex-grow flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+        {/* Background blobs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-secondary-container/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
 
-      {/* Login Card */}
-      <div className="relative z-10 w-full max-w-[440px] px-md">
-        <div className="bg-surface-container-lowest rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-outline-variant/30 p-xl">
+        {/* Signin Card */}
+        <div className="w-full max-w-md glass-panel rounded-[24px] p-6 sm:p-10 relative z-10">
           {/* Header */}
-          <div className="text-center mb-xl">
-            <div className="flex justify-center items-center mb-sm">
-              <span className="material-symbols-outlined text-primary text-[32px] font-bold">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-on-surface mb-2 flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-[32px] text-primary">
                 work
               </span>
-              <span className="ml-xs font-headline-md text-headline-md font-bold text-primary">
-                CareerPulse
-              </span>
-            </div>
-            <p className="font-body-md text-body-md text-on-surface-variant">
+              CareerPulse
+            </h1>
+            <p className="text-sm text-on-surface-variant">
               Welcome back to your professional journey.
             </p>
           </div>
 
-          {/* Role Toggle */}
-          <div className="bg-surface-container-low rounded-lg p-xs flex mb-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)_inset]">
+          {/* Role Selector */}
+          <div className="flex bg-surface-container-low rounded-xl p-1 mb-8 shadow-xs">
             <button
               type="button"
               onClick={() => setRole("job-seeker")}
-              className={`flex-1 font-label-md text-label-md py-sm px-md rounded-[6px] transition-all duration-200 ${
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
                 role === "job-seeker"
-                  ? "bg-surface-container-lowest text-primary-container shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
-                  : "text-on-surface-variant hover:text-on-surface"
+                  ? "bg-surface-container-lowest text-primary shadow-xs"
+                  : "text-on-surface-variant hover:bg-surface-container-highest"
               }`}
             >
               Job Seeker
@@ -63,10 +58,10 @@ export default function SignInPage() {
             <button
               type="button"
               onClick={() => setRole("employer")}
-              className={`flex-1 font-label-md text-label-md py-sm px-md rounded-[6px] transition-all duration-200 ${
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
                 role === "employer"
-                  ? "bg-surface-container-lowest text-primary-container shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
-                  : "text-on-surface-variant hover:text-on-surface"
+                  ? "bg-surface-container-lowest text-primary shadow-xs"
+                  : "text-on-surface-variant hover:bg-surface-container-highest"
               }`}
             >
               Employer
@@ -74,17 +69,17 @@ export default function SignInPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-lg">
-            {/* Email Input */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
             <div>
               <label
-                className="block font-label-sm text-label-sm text-on-surface-variant mb-[8px]"
+                className="block text-xs font-semibold text-on-surface-variant mb-1"
                 htmlFor="email"
               >
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-md flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <span className="material-symbols-outlined text-outline text-[20px]">
                     mail
                   </span>
@@ -97,29 +92,29 @@ export default function SignInPage() {
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-[44px] pr-md py-[12px] bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors placeholder:text-outline/60"
+                  className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>
             </div>
 
-            {/* Password Input */}
+            {/* Password Field */}
             <div>
-              <div className="flex justify-between items-center mb-[8px]">
+              <div className="flex items-center justify-between mb-1">
                 <label
-                  className="block font-label-sm text-label-sm text-on-surface-variant"
+                  className="block text-xs font-semibold text-on-surface-variant"
                   htmlFor="password"
                 >
                   Password
                 </label>
                 <Link
-                  href="/forgot-password"
-                  className="font-label-sm text-label-sm text-primary hover:text-primary-container transition-colors"
+                  href="/auth/forgot-password"
+                  className="text-xs text-primary hover:underline font-medium"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-md flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <span className="material-symbols-outlined text-outline text-[20px]">
                     lock
                   </span>
@@ -132,7 +127,7 @@ export default function SignInPage() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-[44px] pr-md py-[12px] bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors placeholder:text-outline/60"
+                  className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>
             </div>
@@ -140,29 +135,29 @@ export default function SignInPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full flex items-center justify-center bg-primary text-on-primary font-label-md text-label-md h-[52px] rounded-lg shadow-[0_4px_14px_rgba(20,33,117,0.2)] hover:shadow-[0_6px_20px_rgba(20,33,117,0.3)] hover:-translate-y-[2px] transition-all duration-200 group cursor-pointer"
+              className="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Sign In</span>
-              <span className="material-symbols-outlined ml-sm text-[20px] group-hover:translate-x-1 transition-transform">
+              <span className="material-symbols-outlined text-[20px]">
                 arrow_forward
               </span>
             </button>
           </form>
 
-          {/* Sign Up Link */}
-          <div className="mt-xl text-center">
-            <p className="font-body-md text-body-md text-on-surface-variant">
+          {/* Bottom Navigation Link */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-on-surface-variant">
               Don&apos;t have an account?{" "}
               <Link
-                href="/register"
-                className="font-label-md text-label-md text-primary font-bold hover:text-primary-container hover:underline transition-all"
+                href="/auth/signup"
+                className="text-primary hover:underline font-medium"
               >
                 Sign Up
               </Link>
             </p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

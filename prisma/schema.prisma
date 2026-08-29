@@ -84,4 +84,6 @@ model Application{
 
   user        User     @relation(fields: [userId], references: [id])
   job         Job      @relation(fields: [jobId], references: [id])
+
+  @@unique([jobId, userId])
 }

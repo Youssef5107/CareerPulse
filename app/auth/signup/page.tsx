@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { loginWithCredentials, loginWithGoogle } from "@/features/auth";
 
 export default function SignUpPage() {
   const [role, setRole] = useState<"job-seeker" | "employer">("job-seeker");
@@ -10,6 +11,8 @@ export default function SignUpPage() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -18,7 +21,31 @@ export default function SignUpPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitted SignUp Payload:", { role, ...formData });
+    setError(null);
+
+    startTransition(async () => {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: role === "job-seeker" ? "JOB_SEEKER" : "EMPLOYER",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong.");
+        return;
+      }
+
+      // Account now has a role set, so this will land straight on the right home page.
+      const result = await loginWithCredentials(formData.email, formData.password);
+      if (result?.error) setError(result.error);
+    });
   };
 
   return (
@@ -38,6 +65,12 @@ export default function SignUpPage() {
               Join CareerPulse to unlock your potential.
             </p>
           </div>
+
+          {error && (
+            <div className="mb-6 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
+              {error}
+            </div>
+          )}
 
           {/* Role Selector */}
           <div className="flex bg-surface-container-low rounded-xl p-1 mb-8 shadow-sm">
@@ -140,6 +173,7 @@ export default function SignUpPage() {
                   name="password"
                   type="password"
                   required
+                  minLength={8}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
@@ -154,9 +188,10 @@ export default function SignUpPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isPending}
+              className="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:translate-y-0"
             >
-              <span>Create Account</span>
+              <span>{isPending ? "Creating account..." : "Create Account"}</span>
               <span className="material-symbols-outlined text-[20px]">
                 arrow_forward
               </span>
@@ -166,17 +201,11 @@ export default function SignUpPage() {
           <div className="mt-6 text-center">
             <p className="text-xs text-on-surface-variant">
               By signing up, you agree to our{" "}
-              <Link
-                href="/terms"
-                className="text-primary hover:underline font-medium"
-              >
+              <Link href="/terms" className="text-primary hover:underline font-medium">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link
-                href="/privacy"
-                className="text-primary hover:underline font-medium"
-              >
+              <Link href="/privacy" className="text-primary hover:underline font-medium">
                 Privacy Policy
               </Link>
               .
@@ -185,10 +214,7 @@ export default function SignUpPage() {
 
           {/* Social Divider */}
           <div className="my-6 relative">
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center"
-            >
+            <div aria-hidden="true" className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-outline-variant/30"></div>
             </div>
             <div className="relative flex justify-center text-xs">
@@ -198,33 +224,23 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          {/* Social Buttons */}
-          <div className="flex gap-4 justify-center">
-            <button
-              type="button"
-              className="flex items-center justify-center w-full h-[48px] bg-surface-container-lowest border border-outline-variant/50 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-on-surface">
-                account_circle
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center w-full h-[48px] bg-surface-container-lowest border border-outline-variant/50 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-on-surface">
-                laptop_mac
-              </span>
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => startTransition(() => loginWithGoogle())}
+            className="w-full flex items-center justify-center gap-2 h-[48px] bg-surface-container-lowest border border-outline-variant/50 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-on-surface">account_circle</span>
+            <span className="text-sm text-on-surface font-medium">Continue with Google</span>
+          </button>
+          <p className="mt-2 text-[11px] text-center text-on-surface-variant">
+            You&apos;ll pick job seeker or employer right after.
+          </p>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-on-surface-variant">
               Already have an account?{" "}
-              <Link
-                href="/auth/signin"
-                className="text-primary hover:underline font-medium"
-              >
+              <Link href="/auth/signin" className="text-primary hover:underline font-medium">
                 Sign In
               </Link>
             </p>

@@ -1,33 +1,28 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
+"use server";
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
-  session: {
-    strategy: "jwt",
-  },
+import { AuthError } from "next-auth";
+import { signIn, signOut } from "@/lib/auth";
 
-  providers: [],
+export const loginWithGoogle = async () => {
+  await signIn("google", { redirectTo: "/post-login" });
+};
 
-  adapter: PrismaAdapter(prisma),
+export const loginWithCredentials = async (email: string, password: string) => {
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/post-login",
+    });
+  } catch (error) {
+    // NextAuth throws a redirect internally on success - only swallow real auth errors.
+    if (error instanceof AuthError) {
+      return { error: "Invalid email or password." };
+    }
+    throw error;
+  }
+};
 
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-      }
-
-      return token;
-    },
-
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-      }
-
-      return session;
-    },
-  },
-});
+export const logout = async () => {
+  await signOut({ redirectTo: "/auth/signin" });
+};

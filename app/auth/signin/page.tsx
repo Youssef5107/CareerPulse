@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { loginWithCredentials, loginWithGoogle } from "@/features/auth";
 
 export default function SignInPage() {
-  const [role, setRole] = useState<"job-seeker" | "employer">("job-seeker");
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -17,7 +16,11 @@ export default function SignInPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitted SignIn Payload:", { role, ...formData });
+    setError(null);
+    startTransition(async () => {
+      const result = await loginWithCredentials(formData.email, formData.password);
+      if (result?.error) setError(result.error);
+    });
   };
 
   return (
@@ -42,31 +45,11 @@ export default function SignInPage() {
             </p>
           </div>
 
-          {/* Role Selector */}
-          <div className="flex bg-surface-container-low rounded-xl p-1 mb-8 shadow-xs">
-            <button
-              type="button"
-              onClick={() => setRole("job-seeker")}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
-                role === "job-seeker"
-                  ? "bg-surface-container-lowest text-primary shadow-xs"
-                  : "text-on-surface-variant hover:bg-surface-container-highest"
-              }`}
-            >
-              Job Seeker
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("employer")}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
-                role === "employer"
-                  ? "bg-surface-container-lowest text-primary shadow-xs"
-                  : "text-on-surface-variant hover:bg-surface-container-highest"
-              }`}
-            >
-              Employer
-            </button>
-          </div>
+          {error && (
+            <div className="mb-6 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
+              {error}
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -135,14 +118,37 @@ export default function SignInPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isPending}
+              className="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:translate-y-0"
             >
-              <span>Sign In</span>
+              <span>{isPending ? "Signing in..." : "Sign In"}</span>
               <span className="material-symbols-outlined text-[20px]">
                 arrow_forward
               </span>
             </button>
           </form>
+
+          {/* Social Divider */}
+          <div className="my-6 relative">
+            <div aria-hidden="true" className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-outline-variant/30"></div>
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-2 text-on-surface-variant bg-surface-container-lowest rounded">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => startTransition(() => loginWithGoogle())}
+            className="w-full flex items-center justify-center gap-2 h-[48px] bg-surface-container-lowest border border-outline-variant/50 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-on-surface">account_circle</span>
+            <span className="text-sm text-on-surface font-medium">Continue with Google</span>
+          </button>
 
           {/* Bottom Navigation Link */}
           <div className="mt-6 text-center">

@@ -43,27 +43,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
 
-  callbacks: {
-    ...authConfig.callbacks,
-
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.role = (user as { role?: "JOB_SEEKER" | "EMPLOYER" | null }).role ?? null;
-      }
-
-      return token;
-    },
-
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.role = (token.role as "JOB_SEEKER" | "EMPLOYER" | null) ?? null;
-      }
-
-      return session;
-    },
-  },
+  // jwt/session callbacks now live in authConfig (spread above) so middleware
+  // sees the same `role` logic as the full server config.
 });

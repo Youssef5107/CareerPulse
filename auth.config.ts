@@ -23,10 +23,10 @@ export const authConfig = {
       }
 
       if (isJobSeekerRoute && role !== "JOB_SEEKER") {
-        return Response.redirect(new URL("/post-login", nextUrl));
+        return Response.redirect(new URL("/jobseeker/home", nextUrl));
       }
       if (isEmployerRoute && role !== "EMPLOYER") {
-        return Response.redirect(new URL("/post-login", nextUrl));
+        return Response.redirect(new URL("/employer/home", nextUrl));
       }
 
       return true;
@@ -36,7 +36,8 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.role = (user as { role?: "JOB_SEEKER" | "EMPLOYER" | null }).role ?? null;
+        token.role =
+          (user as { role?: "JOB_SEEKER" | "EMPLOYER" | null }).role ?? null;
       }
 
       return token;
@@ -46,7 +47,8 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
-        session.user.role = (token.role as "JOB_SEEKER" | "EMPLOYER" | null) ?? null;
+        session.user.role =
+          (token.role as "JOB_SEEKER" | "EMPLOYER" | null) ?? null;
       }
 
       return session;

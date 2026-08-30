@@ -1,51 +1,12 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
-import { loginWithCredentials } from "@/features/auth";
+import { signup } from "@/features/auth";
 
 export default function SignUpPage() {
   const [role, setRole] = useState<"job-seeker" | "employer">("job-seeker");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    startTransition(async () => {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: role === "job-seeker" ? "JOB_SEEKER" : "EMPLOYER",
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong.");
-        return;
-      }
-
-      const result = await loginWithCredentials(formData.email, formData.password);
-      if (result?.error) setError(result.error);
-    });
-  };
+  const [state, formAction, isPending] = useActionState(signup, undefined);
 
   return (
     <div className="bg-background font-body-md text-on-background antialiased gradient-bg flex flex-col min-h-screen">
@@ -65,9 +26,9 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          {error && (
+          {state?.error && (
             <div className="mb-6 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
-              {error}
+              {state.error}
             </div>
           )}
 
@@ -98,7 +59,13 @@ export default function SignUpPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form action={formAction} className="space-y-6">
+            <input
+              type="hidden"
+              name="role"
+              value={role === "job-seeker" ? "JOB_SEEKER" : "EMPLOYER"}
+            />
+
             {/* Name Field */}
             <div>
               <label
@@ -119,8 +86,6 @@ export default function SignUpPage() {
                   type="text"
                   required
                   placeholder="Jane Doe"
-                  value={formData.name}
-                  onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>
@@ -146,8 +111,6 @@ export default function SignUpPage() {
                   type="email"
                   required
                   placeholder="jane@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>
@@ -174,8 +137,6 @@ export default function SignUpPage() {
                   required
                   minLength={8}
                   placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>

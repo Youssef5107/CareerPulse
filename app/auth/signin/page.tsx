@@ -1,27 +1,11 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
 import { loginWithCredentials } from "@/features/auth";
 
 export default function SignInPage() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    startTransition(async () => {
-      const result = await loginWithCredentials(formData.email, formData.password);
-      if (result?.error) setError(result.error);
-    });
-  };
+  const [state, formAction, isPending] = useActionState(loginWithCredentials, undefined);
 
   return (
     <div className="bg-background text-on-background font-sans antialiased gradient-bg flex flex-col min-h-screen">
@@ -45,14 +29,14 @@ export default function SignInPage() {
             </p>
           </div>
 
-          {error && (
+          {state?.error && (
             <div className="mb-6 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
-              {error}
+              {state.error}
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form action={formAction} className="space-y-6">
             {/* Email Field */}
             <div>
               <label
@@ -73,8 +57,6 @@ export default function SignInPage() {
                   type="email"
                   required
                   placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>
@@ -108,8 +90,6 @@ export default function SignInPage() {
                   type="password"
                   required
                   placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
                   className="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                 />
               </div>

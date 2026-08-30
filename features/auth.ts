@@ -4,18 +4,23 @@ import bcrypt from "bcrypt";
 import { AuthError } from "next-auth";
 import { signIn, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export type AuthActionState = { error?: string } | undefined;
 
 export const loginWithCredentials = async (
   _prevState: AuthActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthActionState> => {
   try {
+    const session = await auth();
     await signIn("credentials", {
       email: formData.get("email"),
       password: formData.get("password"),
-      redirectTo: "/post-login",
+      redirectTo:
+        session?.user.role === "JOB_SEEKER"
+          ? "/jobseeker/home"
+          : "/employer/home",
     });
   } catch (error) {
     // signIn() throws a redirect internally on success - only swallow real auth errors.
@@ -28,7 +33,7 @@ export const loginWithCredentials = async (
 
 export const signup = async (
   _prevState: AuthActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthActionState> => {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
@@ -58,7 +63,15 @@ export const signup = async (
   });
 
   try {
-    await signIn("credentials", { email, password, redirectTo: "/post-login" });
+    const session = await auth();
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo:
+        session?.user.role === "JOB_SEEKER"
+          ? "/jobseeker/home"
+          : "/employer/dashboard",
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: "Account created — please sign in." };

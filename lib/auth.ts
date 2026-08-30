@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcrypt";
@@ -18,11 +17,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
 
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -35,13 +29,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           where: { email: credentials.email as string },
         });
 
-        // No password means this account was created via Google - don't let
-        // it be logged into with a password.
         if (!user?.password) return null;
 
         const isValid = await bcrypt.compare(
           credentials.password as string,
-          user.password,
+          user.password
         );
 
         if (!isValid) return null;
@@ -54,18 +46,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
 
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.role =
-          (user as { role?: "JOB_SEEKER" | "EMPLOYER" | null }).role ?? null;
-      }
-
-      // Lets the client call `useSession().update({ role })` right after
-      // onboarding sets a role, so the JWT reflects it without a re-login.
-      if (trigger === "update" && session?.role) {
-        token.role = session.role;
+        token.role = (user as { role?: "JOB_SEEKER" | "EMPLOYER" | null }).role ?? null;
       }
 
       return token;
@@ -75,8 +60,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string;
-        session.user.role =
-          (token.role as "JOB_SEEKER" | "EMPLOYER" | null) ?? null;
+        session.user.role = (token.role as "JOB_SEEKER" | "EMPLOYER" | null) ?? null;
       }
 
       return session;

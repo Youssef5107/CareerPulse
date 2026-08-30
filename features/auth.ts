@@ -3,10 +3,6 @@
 import { AuthError } from "next-auth";
 import { signIn, signOut } from "@/lib/auth";
 
-export const loginWithGoogle = async () => {
-  await signIn("google", { redirectTo: "/post-login" });
-};
-
 export const loginWithCredentials = async (email: string, password: string) => {
   try {
     await signIn("credentials", {

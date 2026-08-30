@@ -16,18 +16,9 @@ export const authConfig = {
 
       const isJobSeekerRoute = nextUrl.pathname.startsWith("/jobseeker");
       const isEmployerRoute = nextUrl.pathname.startsWith("/employer");
-      const isOnboardingRoute = nextUrl.pathname.startsWith("/onboarding");
 
-      if (
-        (isJobSeekerRoute || isEmployerRoute || isOnboardingRoute) &&
-        !isLoggedIn
-      ) {
+      if ((isJobSeekerRoute || isEmployerRoute) && !isLoggedIn) {
         return false; // NextAuth redirects to pages.signIn automatically
-      }
-
-      // Logged in but hasn't picked a role yet (fresh Google sign-in) -> force onboarding
-      if ((isJobSeekerRoute || isEmployerRoute) && isLoggedIn && !role) {
-        return Response.redirect(new URL("/onboarding/role", nextUrl));
       }
 
       // Logged-in job seeker wandering into /employer, or vice versa

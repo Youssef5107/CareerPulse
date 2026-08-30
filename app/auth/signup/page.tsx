@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { loginWithCredentials, loginWithGoogle } from "@/features/auth";
+import { loginWithCredentials } from "@/features/auth";
 
 export default function SignUpPage() {
   const [role, setRole] = useState<"job-seeker" | "employer">("job-seeker");
@@ -42,7 +42,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // Account now has a role set, so this will land straight on the right home page.
       const result = await loginWithCredentials(formData.email, formData.password);
       if (result?.error) setError(result.error);
     });
@@ -211,31 +210,6 @@ export default function SignUpPage() {
               .
             </p>
           </div>
-
-          {/* Social Divider */}
-          <div className="my-6 relative">
-            <div aria-hidden="true" className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-outline-variant/30"></div>
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-2 text-on-surface-variant bg-surface-container-lowest rounded">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => startTransition(() => loginWithGoogle())}
-            className="w-full flex items-center justify-center gap-2 h-[48px] bg-surface-container-lowest border border-outline-variant/50 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-on-surface">account_circle</span>
-            <span className="text-sm text-on-surface font-medium">Continue with Google</span>
-          </button>
-          <p className="mt-2 text-[11px] text-center text-on-surface-variant">
-            You&apos;ll pick job seeker or employer right after.
-          </p>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-on-surface-variant">

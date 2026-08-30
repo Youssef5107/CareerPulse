@@ -8,5 +8,8 @@ export default async function PostLoginPage() {
     redirect("/auth/signin");
   }
 
-  redirect(session.user.role === "JOB_SEEKER" ? "/jobseeker/home" : "/employer/home");
+  console.log(session.user.role);
+  redirect(
+    session.user.role === "JOB_SEEKER" ? "/jobseeker/home" : "/employer/home",
+  );
 }

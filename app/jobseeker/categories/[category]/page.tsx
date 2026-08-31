@@ -50,12 +50,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </p>
       </div>
 
-      {/* Responsive Grid: 1 column on mobile, 2 columns on medium screens and up */}
+      {/* Responsive Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {jobs.map((job) => (
-          <div
+          <Link
             key={job.id}
-            className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between"
+            href={`/jobseeker/jobs/${job.id}`}
+            className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
           >
             <div>
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -64,7 +65,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     {job.company.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base leading-snug">
+                    <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-blue-600 transition-colors">
                       {job.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -72,7 +73,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     </p>
                   </div>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600 shrink-0">
+                {/* Bookmark Button */}
+                <button
+                  type="button"
+                  className="text-slate-400 hover:text-slate-600 shrink-0 z-10 p-1"
+                >
                   <span className="material-symbols-outlined">bookmark</span>
                 </button>
               </div>
@@ -91,7 +96,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 {job.category}
               </span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

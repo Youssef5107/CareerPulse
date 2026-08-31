@@ -64,9 +64,11 @@ export default function SidebarContent({ onClose }: SidebarContentProps) {
               >
                 <span
                   className="material-symbols-outlined"
-                  style={
-                    isActive ? { fontVariationSettings: "'FILL' 1" } : undefined
-                  }
+                  style={{
+                    fontVariationSettings: isActive
+                      ? "'FILL' 1, 'wght' 700, 'opsz' 48"
+                      : "'FILL' 0, 'wght' 400",
+                  }}
                 >
                   {item.icon}
                 </span>

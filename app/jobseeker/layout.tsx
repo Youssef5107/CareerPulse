@@ -18,10 +18,12 @@ export default function JobSeekerLayout({
         <SidebarContent />
       </aside>
 
-      {/* Main Page Slot */}
-      <div className="flex-1 flex flex-col h-full min-w-0 relative z-0 overflow-y-auto">
+      {/* Main Page Container */}
+      <div className="flex-1 flex flex-col h-full min-w-0 relative z-0 overflow-hidden">
         <MobileHeader onMenuClick={() => setIsDrawerOpen(true)} />
-        {children}
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+          {children}
+        </main>
       </div>
 
       {/* Mobile Drawer Backdrop */}

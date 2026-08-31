@@ -1,30 +1,53 @@
-export default function JobSeekerHomePage() {
-  const categories = [
-    {
-      name: "Design",
-      count: "1,204 jobs",
-      icon: "palette",
-      bg: "bg-blue-50 text-blue-600",
+import React from "react";
+import { PrismaClient } from "@/app/generated/prisma";
+
+const prisma = new PrismaClient();
+
+const categoryMetadata: Record<string, { icon: string; bg: string }> = {
+  Design: { icon: "palette", bg: "bg-blue-50 text-blue-600" },
+  Engineering: { icon: "code", bg: "bg-indigo-50 text-indigo-600" },
+  Marketing: { icon: "campaign", bg: "bg-sky-50 text-sky-600" },
+  Data: { icon: "analytics", bg: "bg-teal-50 text-teal-600" },
+  Sales: { icon: "trending_up", bg: "bg-emerald-50 text-emerald-600" },
+  Product: { icon: "inventory_2", bg: "bg-amber-50 text-amber-600" },
+};
+
+export default async function JobSeekerHomePage() {
+  const categoryCounts = await prisma.job.groupBy({
+    by: ["category"],
+    _count: {
+      id: true,
     },
-    {
-      name: "Engineering",
-      count: "3,450 jobs",
-      icon: "code",
-      bg: "bg-indigo-50 text-indigo-600",
+  });
+
+  const countMap = categoryCounts.reduce(
+    (acc, curr) => {
+      acc[curr.category] = curr._count.id;
+      return acc;
     },
-    {
-      name: "Marketing",
-      count: "856 jobs",
-      icon: "campaign",
-      bg: "bg-sky-50 text-sky-600",
-    },
-    {
-      name: "Data",
-      count: "1,890 jobs",
-      icon: "analytics",
-      bg: "bg-teal-50 text-teal-600",
-    },
-  ];
+    {} as Record<string, number>,
+  );
+
+  const primaryCategoryNames = ["Design", "Engineering", "Marketing", "Data"];
+
+  const categories = primaryCategoryNames.map((name) => {
+    const jobCount = countMap[name] || 0;
+    const meta = categoryMetadata[name] || {
+      icon: "work",
+      bg: "bg-slate-50 text-slate-600",
+    };
+
+    return {
+      name,
+      count: `${jobCount.toLocaleString()} ${jobCount === 1 ? "job" : "jobs"}`,
+      icon: meta.icon,
+      bg: meta.bg,
+    };
+  });
+
+  const recommendedJob = await prisma.job.findFirst({
+    orderBy: { postedAt: "desc" },
+  });
 
   return (
     <div className="pt-20 md:pt-10 pb-12 px-4 md:px-10 max-w-6xl mx-auto w-full">
@@ -98,12 +121,13 @@ export default function JobSeekerHomePage() {
                 Explore Categories
               </h2>
               <a
-                href="#"
+                href="/jobseeker/search"
                 className="text-xs font-semibold text-blue-600 hover:underline"
               >
                 View all
               </a>
             </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {categories.map((cat) => (
                 <div
@@ -134,35 +158,39 @@ export default function JobSeekerHomePage() {
               Recommended for You
             </h2>
             <div className="space-y-4">
-              <div className="bg-white p-5 rounded-xl border border-slate-200 flex items-start justify-between">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
-                    LOGO
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm md:text-base">
-                      Senior UX Researcher
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      TechFlow Systems • San Francisco, CA (Hybrid)
-                    </p>
-                    <div className="flex gap-2 mt-3 flex-wrap">
-                      <span className="bg-blue-50 text-blue-600 text-[11px] font-medium px-2.5 py-1 rounded">
-                        $140k - $180k
-                      </span>
-                      <span className="bg-slate-100 text-slate-600 text-[11px] px-2.5 py-1 rounded">
-                        Full-time
-                      </span>
-                      <span className="bg-slate-100 text-slate-600 text-[11px] px-2.5 py-1 rounded">
-                        Mid-Senior level
-                      </span>
+              {recommendedJob && (
+                <div className="bg-white p-5 rounded-xl border border-slate-200 flex items-start justify-between">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
+                      {recommendedJob.company.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm md:text-base">
+                        {recommendedJob.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {recommendedJob.company} • {recommendedJob.location}
+                      </p>
+                      <div className="flex gap-2 mt-3 flex-wrap">
+                        {recommendedJob.salary && (
+                          <span className="bg-blue-50 text-blue-600 text-[11px] font-medium px-2.5 py-1 rounded">
+                            {recommendedJob.salary}
+                          </span>
+                        )}
+                        <span className="bg-slate-100 text-slate-600 text-[11px] px-2.5 py-1 rounded">
+                          {recommendedJob.type}
+                        </span>
+                        <span className="bg-slate-100 text-slate-600 text-[11px] px-2.5 py-1 rounded">
+                          {recommendedJob.category}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <button className="text-slate-400 hover:text-slate-600">
+                    <span className="material-symbols-outlined">bookmark</span>
+                  </button>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600">
-                  <span className="material-symbols-outlined">bookmark</span>
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>

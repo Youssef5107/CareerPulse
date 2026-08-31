@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const categories = [
   {
     name: "Design",
+    targetCount: 42,
     titles: [
       "Senior UX Designer",
       "UI/UX Visual Designer",
@@ -16,6 +17,7 @@ const categories = [
   },
   {
     name: "Engineering",
+    targetCount: 63,
     titles: [
       "Full-Stack Web Developer",
       "Senior Frontend React Engineer",
@@ -27,6 +29,7 @@ const categories = [
   },
   {
     name: "Marketing",
+    targetCount: 27,
     titles: [
       "Growth Marketing Manager",
       "SEO & Content Strategist",
@@ -38,6 +41,7 @@ const categories = [
   },
   {
     name: "Data",
+    targetCount: 35,
     titles: [
       "Data Analyst",
       "Senior Data Engineer",
@@ -49,6 +53,7 @@ const categories = [
   },
   {
     name: "Sales",
+    targetCount: 30,
     titles: [
       "Enterprise Account Executive",
       "Business Development Representative",
@@ -59,6 +64,7 @@ const categories = [
   },
   {
     name: "Product",
+    targetCount: 18,
     titles: [
       "Senior Product Manager",
       "Technical Product Manager",
@@ -99,9 +105,11 @@ const salaries = [
 ];
 
 async function main() {
-  console.log("Seeding database...");
+  console.log("Cleaning old jobs...");
+  await prisma.job.deleteMany({});
 
-  // 1. Create a dummy employer user to post the jobs
+  console.log("Seeding database with varied job counts...");
+
   const employer = await prisma.user.upsert({
     where: { email: "employer@seed.com" },
     update: {},
@@ -114,9 +122,8 @@ async function main() {
 
   const jobsToCreate = [];
 
-  // 2. Generate 25 jobs for each category (Total: 150 jobs)
   for (const cat of categories) {
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < cat.targetCount; i++) {
       const title = cat.titles[i % cat.titles.length];
       const company = companies[Math.floor(Math.random() * companies.length)];
       const location = locations[Math.floor(Math.random() * locations.length)];
@@ -124,27 +131,25 @@ async function main() {
       const salary = salaries[Math.floor(Math.random() * salaries.length)];
 
       jobsToCreate.push({
-        title: `${title} ${i > 5 ? `#${i + 1}` : ""}`.trim(),
+        title: `${title} ${i >= cat.titles.length ? `#${i + 1}` : ""}`.trim(),
         company,
         location,
         type,
         category: cat.name,
         salary,
         description: `We are looking for an experienced ${title} to join our fast-growing team at ${company}. You will be driving core product strategy, leading engineering and design efforts, and building scalable modern web applications. Ideal candidates have 3+ years of experience in high-growth startup environments.`,
-        isExpired: true, // Marked as expired so users cannot apply
+        isExpired: true,
         postedById: employer.id,
       });
     }
   }
 
-  // 3. Batch insert into database
   await prisma.job.createMany({
     data: jobsToCreate,
   });
 
-  console.log(
-    `Successfully seeded ${jobsToCreate.length} expired jobs across ${categories.length} categories.`,
-  );
+  console.log(`Successfully seeded ${jobsToCreate.length} expired jobs:`);
+  categories.forEach((c) => console.log(` - ${c.name}: ${c.targetCount} jobs`));
 }
 
 main()

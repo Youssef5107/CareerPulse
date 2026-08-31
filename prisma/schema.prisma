@@ -22,12 +22,8 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-
-  // Only set for Credentials sign-ups. Null for Google users until we hash one, which we never do.
   password      String?
 
-  // Null right after a brand-new Google sign-in, until the user picks one on /onboarding/role.
-  // Set immediately at signup for Credentials users.
   role          Role?
 
   accounts      Account[]
@@ -77,8 +73,10 @@ model Job {
   company     String
   location    String
   type        String
+  category    String   
   description String   @db.Text
-  salary      String?
+  salary      String
+  isExpired   Boolean  @default(true)
 
   postedAt    DateTime @default(now())
   postedBy    User     @relation("postedJobs", fields: [postedById], references: [id])

@@ -5,13 +5,15 @@ import Image from "next/image";
 
 export default function SavedJobsPage() {
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-[#f8f9ff] p-6 md:p-12">
+    <div className="flex-1 h-full overflow-y-auto bg-[#f8f9ff] px-4 md:px-12 pb-6 md:pb-12 pt-20 md:pt-12">
       <div className="max-w-[1024px] mx-auto">
         {/* Page Header */}
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900">Saved Jobs</h2>
-            <p className="text-base text-slate-500 mt-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+              Saved Jobs
+            </h2>
+            <p className="text-sm md:text-base text-slate-500 mt-1">
               You have 4 saved opportunities.
             </p>
           </div>

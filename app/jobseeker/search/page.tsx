@@ -4,21 +4,21 @@ import React from "react";
 
 export default function SearchPage() {
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f8f9ff] overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full bg-[#f8f9ff] overflow-y-auto pt-16 md:pt-0">
       {/* Top Search Header */}
-      <header className="bg-white px-8 py-6 z-10 border-b border-slate-200 shadow-sm shrink-0">
+      <header className="bg-white px-4 md:px-8 py-6 z-10 border-b border-slate-200 shadow-sm shrink-0">
         <div className="max-w-[1280px] mx-auto flex flex-col gap-6">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-1">
+          <div className="text-center md:text-left">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
               Find Your Next Role
             </h2>
-            <p className="text-base text-slate-500">
+            <p className="text-sm md:text-base text-slate-500">
               Explore over 12,000 open positions tailored for you.
             </p>
           </div>
 
           {/* Search Inputs */}
-          <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
+          <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap items-stretch sm:items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
             <div className="relative flex-1 min-w-[200px] flex items-center">
               <span className="material-symbols-outlined absolute left-4 text-slate-400">
                 search
@@ -43,19 +43,21 @@ export default function SearchPage() {
               />
             </div>
 
-            <button className="bg-white border border-slate-200 text-slate-700 px-5 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors h-[46px]">
-              <span className="material-symbols-outlined text-slate-500 text-lg">
-                tune
-              </span>{" "}
-              Filters
-            </button>
-            <button className="bg-[#142175] text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-[#142175]/90 transition-all shadow-sm h-[46px]">
-              Search Jobs
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button className="flex-1 sm:flex-none justify-center bg-white border border-slate-200 text-slate-700 px-5 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-slate-50 transition-colors h-[46px]">
+                <span className="material-symbols-outlined text-slate-500 text-lg">
+                  tune
+                </span>{" "}
+                Filters
+              </button>
+              <button className="flex-1 sm:flex-none justify-center bg-[#142175] text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-[#142175]/90 transition-all shadow-sm h-[46px]">
+                Search Jobs
+              </button>
+            </div>
           </div>
 
           {/* Quick Filters */}
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-2 overflow-x-auto pb-1 justify-start md:justify-start">
             <button className="px-4 py-1.5 rounded-full bg-blue-100 text-[#142175] text-xs font-semibold whitespace-nowrap">
               All Roles
             </button>
@@ -75,10 +77,10 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {/* Main Two-Column View */}
-      <div className="flex-1 flex overflow-hidden max-w-[1280px] w-full mx-auto p-6 gap-6">
+      {/* Main Container View */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden max-w-[1280px] w-full mx-auto p-4 md:p-6 gap-6">
         {/* Left Column: Job Cards */}
-        <div className="w-[400px] shrink-0 flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="w-full md:w-[400px] shrink-0 flex flex-col md:h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
             <span className="text-xs font-semibold text-slate-500">
               Showing 245 results
@@ -170,10 +172,10 @@ export default function SearchPage() {
         </div>
 
         {/* Right Column: Detailed View */}
-        <div className="flex-1 flex flex-col h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="flex-1 flex flex-col md:h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Sticky Header */}
           <div className="p-6 border-b border-slate-100 bg-white shrink-0">
-            <div className="flex justify-between items-start gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div className="flex gap-4 items-center">
                 <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xl text-slate-400 shrink-0">
                   TF
@@ -189,8 +191,8 @@ export default function SearchPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <button className="w-11 h-11 rounded-xl border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors">
+              <div className="flex gap-3 w-full sm:w-auto">
+                <button className="w-11 h-11 rounded-xl border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0">
                   <span
                     className="material-symbols-outlined text-[#142175]"
                     style={{ fontVariationSettings: "'FILL' 1" }}
@@ -198,13 +200,13 @@ export default function SearchPage() {
                     bookmark
                   </span>
                 </button>
-                <button className="bg-[#142175] text-white px-6 rounded-xl text-sm font-semibold hover:bg-[#142175]/90 transition-all h-11">
+                <button className="flex-1 sm:flex-none bg-[#142175] text-white px-6 rounded-xl text-sm font-semibold hover:bg-[#142175]/90 transition-all h-11">
                   Apply Now
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
               <div>
                 <span className="block text-xs text-slate-400 font-medium mb-1">
                   Salary

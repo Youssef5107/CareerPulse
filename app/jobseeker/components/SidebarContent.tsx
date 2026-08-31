@@ -19,12 +19,12 @@ export default function SidebarContent({ onClose }: SidebarContentProps) {
   ];
 
   return (
-    <div className="flex flex-col h-full justify-between p-6 bg-white">
+    <div className="flex flex-col h-full justify-between p-6 bg-surface-container-lowest">
       <div>
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3 text-[#091426]">
-            <div className="w-10 h-10 bg-[#091426] text-white rounded-xl flex items-center justify-center shadow-sm">
+          <div className="flex items-center gap-3 text-primary">
+            <div className="w-10 h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center shadow-sm">
               <span
                 className="material-symbols-outlined"
                 style={{ fontVariationSettings: "'FILL' 1" }}
@@ -32,23 +32,22 @@ export default function SidebarContent({ onClose }: SidebarContentProps) {
                 work
               </span>
             </div>
-            <span className="text-xl font-bold tracking-tight">
+            <span className="font-headline-md text-headline-md font-bold tracking-tight">
               CareerPulse
             </span>
           </div>
 
-          {/* Mobile Close Button */}
           {onClose && (
             <button
               onClick={onClose}
-              className="md:hidden p-1.5 rounded-full text-slate-400 hover:bg-slate-100 transition-colors"
+              className="md:hidden p-1 rounded-full text-on-surface-variant hover:bg-surface-container-low"
             >
-              <span className="material-symbols-outlined text-xl">close</span>
+              <span className="material-symbols-outlined">close</span>
             </button>
           )}
         </div>
 
-        {/* Links */}
+        {/* Navigation Items */}
         <nav className="flex flex-col gap-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -57,43 +56,49 @@ export default function SidebarContent({ onClose }: SidebarContentProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => onClose && onClose()}
-                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-colors text-sm font-semibold ${
+                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-[#2170e4]"
-                    : "text-slate-600 hover:bg-slate-100"
+                    ? "bg-secondary-fixed/20 text-secondary font-bold"
+                    : "text-on-surface-variant hover:bg-surface-container-low"
                 }`}
               >
                 <span
-                  className="material-symbols-outlined text-[22px]"
+                  className="material-symbols-outlined"
                   style={
                     isActive ? { fontVariationSettings: "'FILL' 1" } : undefined
                   }
                 >
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span className="font-label-md text-label-md">
+                  {item.label}
+                </span>
               </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* User Profile Footer */}
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-700">
-            AM
+      {/* User Footer */}
+      <div className="pt-6 border-t border-outline-variant/30">
+        <button className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-surface-container-low transition-colors text-left">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant shrink-0">
+            <img
+              alt="User Profile"
+              className="w-full h-full object-cover"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8i0Wh4Uj-7ewYNWItip4syTASfDCQXmRdFsJjj2G8OnfFxfsK_XScxnRFDHUKWOfec-8zGHPHmpiak6UVnud4zQf_gKoAlrR45r1qncaKgNjjqSvbSmSTknQrHh9jr2-fgopPdWYiBfbDxaRw5F6AH22QoqcWDKcucZOVL-oTrp96ROtdHzdp9oQTP4XFy_piaGzPf5itWtR9bzsvZROEjx4pdjvJyrjXEnlGVltIULRR9HHU6A"
+            />
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-900 leading-tight">
-              Alex Morgan
-            </span>
-            <span className="text-xs text-slate-500">UX Designer</span>
+          <div className="flex-1 overflow-hidden">
+            <p className="font-label-sm text-label-sm truncate">Alex Morgan</p>
+            <p className="font-body-sm text-body-sm text-on-surface-variant truncate text-xs">
+              UX Designer
+            </p>
           </div>
-        </div>
-        <span className="material-symbols-outlined text-slate-400 text-base cursor-pointer hover:text-slate-600">
-          more_vert
-        </span>
+          <span className="material-symbols-outlined text-on-surface-variant">
+            more_vert
+          </span>
+        </button>
       </div>
     </div>
   );

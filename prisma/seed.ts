@@ -14,6 +14,16 @@ const categories = [
       "Brand & Graphic Designer",
       "Design Systems Engineer",
     ],
+    requirementsPool: [
+      "3+ years of experience designing web and mobile applications.",
+      "Proficiency with Figma, Auto Layout, and component architecture.",
+      "Strong understanding of responsive design and accessibility (WCAG) standards.",
+      "Experience conducting user interviews and usability testing sessions.",
+      "Ability to create high-fidelity prototypes and interactive wireframes.",
+      "Experience building and maintaining scalable multi-brand design systems.",
+      "Strong background in motion design and visual micro-interactions.",
+      "Proven track record of collaborating closely with frontend engineering teams.",
+    ],
   },
   {
     name: "Engineering",
@@ -25,6 +35,16 @@ const categories = [
       "DevOps & Infrastructure Engineer",
       "Mobile App Developer (React Native)",
       "Systems Architect",
+    ],
+    requirementsPool: [
+      "3+ years of experience with TypeScript, React, and Next.js.",
+      "Solid understanding of relational databases (PostgreSQL) and Prisma ORM.",
+      "Hands-on experience with server-side Node.js and Express frameworks.",
+      "Familiarity with containerization using Docker and cloud platforms (Railway, Vercel).",
+      "Experience writing automated unit tests using Vitest or React Testing Library.",
+      "Proficiency with RESTful APIs, WebSockets, and real-time streaming endpoints.",
+      "Understanding of web security fundamentals and OWASP guidelines.",
+      "Strong knowledge of state management patterns (Redux Toolkit, Zustand).",
     ],
   },
   {
@@ -38,6 +58,15 @@ const categories = [
       "Social Media Campaign Manager",
       "Email Marketing Automation Specialist",
     ],
+    requirementsPool: [
+      "3+ years managing paid acquisition campaigns across Meta, Google, and LinkedIn.",
+      "Proficiency with Google Analytics (GA4), Search Console, and SEO tools.",
+      "Experience building automated lifecycle email workflows and drip campaigns.",
+      "Strong copywriting and editorial background with a focus on conversions.",
+      "Hands-on experience running A/B landing page tests and funnel optimization.",
+      "Ability to analyze campaign metrics and present performance reports to stakeholders.",
+      "Demonstrated experience managing monthly advertising budgets above $20k.",
+    ],
   },
   {
     name: "Data",
@@ -50,6 +79,15 @@ const categories = [
       "Data Infrastructure Engineer",
       "Analytics Manager",
     ],
+    requirementsPool: [
+      "Strong proficiency in complex SQL queries, window functions, and database tuning.",
+      "Experience writing production ETL/ELT pipelines with Python or dbt.",
+      "Proficiency with data visualization dashboards (Tableau, Looker, PowerBI).",
+      "Background in statistical modeling, hypothesis testing, and quantitative analysis.",
+      "Experience with cloud data warehouses such as Snowflake, BigQuery, or Redshift.",
+      "Familiarity with machine learning frameworks (scikit-learn, PyTorch, or TensorFlow).",
+      "Bachelor's degree in Computer Science, Applied Math, Statistics, or equivalent field.",
+    ],
   },
   {
     name: "Sales",
@@ -61,6 +99,14 @@ const categories = [
       "Customer Success Manager",
       "Strategic Partnerships Manager",
     ],
+    requirementsPool: [
+      "2+ years of enterprise SaaS sales or account management experience.",
+      "Proven history of meeting or exceeding quarterly quota targets.",
+      "Experience running end-to-end sales pipelines using Salesforce or HubSpot.",
+      "Strong consultative selling, deal negotiation, and closing skills.",
+      "Excellent verbal communication and executive-level presentation abilities.",
+      "Track record of managing key accounts and driving contract renewals.",
+    ],
   },
   {
     name: "Product",
@@ -70,6 +116,14 @@ const categories = [
       "Technical Product Manager",
       "Product Operations Lead",
       "Associate Product Manager",
+    ],
+    requirementsPool: [
+      "3+ years leading product development cycles for B2B or B2C SaaS platforms.",
+      "Experience running Agile/Scrum ceremonies and writing detailed user stories.",
+      "Strong ability to translate user feedback into actionable technical roadmaps.",
+      "Comfortable analyzing product analytics using Mixpanel, Amplitude, or PostHog.",
+      "Proven cross-functional leadership across design, engineering, and marketing teams.",
+      "Demonstrated success launching MVPs from initial concept to market adoption.",
     ],
   },
 ];
@@ -104,11 +158,30 @@ const salaries = [
   "$160,000 - $200,000",
 ];
 
+const globalBenefitsPool = [
+  "Comprehensive Health, Dental, & Vision Coverage",
+  "401(k) Retirement Plan with 5% Employer Match",
+  "Flexible Remote Working Policy & $1,000 Home Office Stipend",
+  "Unlimited Paid Time Off (PTO) & Paid Company Holidays",
+  "$1,500 Annual Learning & Professional Development Allowance",
+  "16 Weeks Fully Paid Parental Leave for All New Parents",
+  "Monthly Wellness & Gym Membership Reimbursement",
+  "Flexible Spending Account (FSA) & Health Savings Account (HSA)",
+  "Annual Company Retreats & Team Outings",
+  "Stock Options / Equity Grant Options",
+];
+
+// Utility function to pick 'count' random unique items from an array
+function getRandomItems<T>(array: T[], count: number): T[] {
+  const shuffled = [...array].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
 async function main() {
   console.log("Cleaning old jobs...");
   await prisma.job.deleteMany({});
 
-  console.log("Seeding database with varied job counts...");
+  console.log("Seeding database with randomized requirements and benefits...");
 
   const employer = await prisma.user.upsert({
     where: { email: "employer@seed.com" },
@@ -130,6 +203,14 @@ async function main() {
       const type = jobTypes[Math.floor(Math.random() * jobTypes.length)];
       const salary = salaries[Math.floor(Math.random() * salaries.length)];
 
+      // Pick 3 to 5 random requirements specifically for this job
+      const reqCount = 3 + Math.floor(Math.random() * 3);
+      const requirements = getRandomItems(cat.requirementsPool, reqCount);
+
+      // Pick 3 to 5 random benefits specifically for this job
+      const benefitCount = 3 + Math.floor(Math.random() * 3);
+      const benefits = getRandomItems(globalBenefitsPool, benefitCount);
+
       jobsToCreate.push({
         title: `${title} ${i >= cat.titles.length ? `#${i + 1}` : ""}`.trim(),
         company,
@@ -138,6 +219,8 @@ async function main() {
         category: cat.name,
         salary,
         description: `We are looking for an experienced ${title} to join our fast-growing team at ${company}. You will be driving core product strategy, leading engineering and design efforts, and building scalable modern web applications. Ideal candidates have 3+ years of experience in high-growth startup environments.`,
+        requirements,
+        benefits,
         isExpired: true,
         postedById: employer.id,
       });

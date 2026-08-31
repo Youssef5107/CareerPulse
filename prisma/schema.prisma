@@ -68,19 +68,21 @@ model VerificationToken {
 }
 
 model Job {
-  id          String   @id @default(cuid())
-  title       String
-  company     String
-  location    String
-  type        String
-  category    String   
-  description String   @db.Text
-  salary      String
-  isExpired   Boolean  @default(true)
+  id           String   @id @default(cuid())
+  title        String
+  company      String
+  location     String
+  type         String
+  category     String   
+  description  String   @db.Text
+  salary       String
+  requirements String[] @default([])
+  benefits     String[] @default([])
+  isExpired    Boolean  @default(true)
 
-  postedAt    DateTime @default(now())
-  postedBy    User     @relation("postedJobs", fields: [postedById], references: [id])
-  postedById  String
+  postedAt     DateTime @default(now())
+  postedBy     User     @relation("postedJobs", fields: [postedById], references: [id])
+  postedById   String
 
   applications Application[]
 }

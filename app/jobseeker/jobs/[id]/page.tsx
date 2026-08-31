@@ -35,7 +35,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         />
       </div>
 
-      {/* Added pt-20 on mobile & pt-24 on desktop to clear fixed top navbar */}
       <div className="max-w-[1280px] mx-auto px-4 md:px-12 pt-20 md:pt-24 pb-12 relative z-10">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-[#454651] text-xs font-semibold mb-4 md:mb-6">
@@ -140,85 +139,54 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 About the Role
               </h2>
               <p className="text-sm md:text-base leading-relaxed text-[#454651] whitespace-pre-line">
-                {job.description ||
-                  `${job.company} is seeking a dynamic ${job.title} to join their team in ${job.location}. This position requires driving user-focused outcomes and collaborating closely with cross-functional teams.`}
+                {job.description}
               </p>
             </div>
 
-            {/* Requirements */}
-            <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
-              <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
-                Requirements
-              </h2>
-              <ul className="text-sm md:text-base text-[#454651] space-y-2.5">
-                <li className="flex items-start gap-2.5">
-                  <span className="material-symbols-outlined text-[#142175] mt-0.5 text-base shrink-0">
-                    check_circle
-                  </span>
-                  <span>
-                    Proven experience working in relevant development
-                    environments and projects.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="material-symbols-outlined text-[#142175] mt-0.5 text-base shrink-0">
-                    check_circle
-                  </span>
-                  <span>
-                    Strong problem-solving abilities and effective cross-team
-                    communication.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="material-symbols-outlined text-[#142175] mt-0.5 text-base shrink-0">
-                    check_circle
-                  </span>
-                  <span>
-                    Ability to operate efficiently in structured development
-                    workflows.
-                  </span>
-                </li>
-              </ul>
-            </div>
+            {/* Dynamic Requirements */}
+            {job.requirements && job.requirements.length > 0 && (
+              <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
+                <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
+                  Requirements
+                </h2>
+                <ul className="text-sm md:text-base text-[#454651] space-y-2.5">
+                  {job.requirements.map((req, index) => (
+                    <li key={index} className="flex items-start gap-2.5">
+                      <span className="material-symbols-outlined text-[#142175] mt-0.5 text-base shrink-0">
+                        check_circle
+                      </span>
+                      <span>{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            {/* Benefits */}
-            <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
-              <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
-                Benefits
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center gap-3 p-3.5 bg-[#f8f9ff] rounded-xl border border-[#c6c5d3]/20">
-                  <div className="w-9 h-9 rounded-full bg-[#eff4ff] text-[#142175] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-lg">
-                      health_and_safety
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-xs md:text-sm font-semibold text-[#191c20]">
-                      Comprehensive Health
-                    </h3>
-                    <p className="text-[11px] md:text-xs text-[#454651]">
-                      Medical, dental, and vision.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3.5 bg-[#f8f9ff] rounded-xl border border-[#c6c5d3]/20">
-                  <div className="w-9 h-9 rounded-full bg-[#eff4ff] text-[#142175] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-lg">
-                      paid
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-xs md:text-sm font-semibold text-[#191c20]">
-                      Competitive Compensation
-                    </h3>
-                    <p className="text-[11px] md:text-xs text-[#454651]">
-                      Competitive base salary and benefits.
-                    </p>
-                  </div>
+            {/* Dynamic Benefits */}
+            {job.benefits && job.benefits.length > 0 && (
+              <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
+                <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
+                  Benefits
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {job.benefits.map((benefit, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3.5 bg-[#f8f9ff] rounded-xl border border-[#c6c5d3]/20"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#eff4ff] text-[#142175] flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-lg">
+                          verified
+                        </span>
+                      </div>
+                      <span className="text-xs md:text-sm font-semibold text-[#191c20]">
+                        {benefit}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Sidebar */}

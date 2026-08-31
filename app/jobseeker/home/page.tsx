@@ -1,5 +1,6 @@
 import React from "react";
 import { PrismaClient } from "@/app/generated/prisma";
+import Link from "next/link";
 
 const prisma = new PrismaClient();
 
@@ -130,8 +131,9 @@ export default async function JobSeekerHomePage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {categories.map((cat) => (
-                <div
+                <Link
                   key={cat.name}
+                  href={`/jobseeker/categories/${encodeURIComponent(cat.name.toLowerCase())}`}
                   className="bg-white p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 transition-all text-center flex flex-col items-center justify-center cursor-pointer group"
                 >
                   <div
@@ -147,7 +149,7 @@ export default async function JobSeekerHomePage() {
                   <span className="text-[11px] text-slate-400 mt-0.5">
                     {cat.count}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

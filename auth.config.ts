@@ -26,7 +26,7 @@ export const authConfig = {
         return Response.redirect(new URL("/jobseeker/home", nextUrl));
       }
       if (isEmployerRoute && role !== "EMPLOYER") {
-        return Response.redirect(new URL("/employer/home", nextUrl));
+        return Response.redirect(new URL("/employer/dashboard", nextUrl));
       }
 
       return true;

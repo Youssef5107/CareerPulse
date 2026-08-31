@@ -20,7 +20,7 @@ export const loginWithCredentials = async (
       redirectTo:
         session?.user.role === "JOB_SEEKER"
           ? "/jobseeker/home"
-          : "/employer/home",
+          : "/employer/dashboard",
     });
   } catch (error) {
     // signIn() throws a redirect internally on success - only swallow real auth errors.

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import MobileHeader from "./components/MobileHeader";
-import SidebarContent from "./components/SidebarContent";
+import SideNavBar from "./components/SideNavBar";
 
 export default function JobSeekerLayout({
   children,
@@ -15,7 +15,7 @@ export default function JobSeekerLayout({
     <div className="bg-background text-on-background h-screen flex overflow-hidden font-sans antialiased">
       {/* Permanent Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-surface-container-lowest border-r border-outline-variant/30 shrink-0 z-20 shadow-[4px_0_24px_rgba(30,41,59,0.02)] h-full">
-        <SidebarContent />
+        <SideNavBar />
       </aside>
 
       {/* Main Page Container */}
@@ -40,7 +40,7 @@ export default function JobSeekerLayout({
           isDrawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarContent onClose={() => setIsDrawerOpen(false)} />
+        <SideNavBar onClose={() => setIsDrawerOpen(false)} />
       </aside>
     </div>
   );

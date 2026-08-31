@@ -8,7 +8,7 @@ interface SidebarContentProps {
   onClose?: () => void;
 }
 
-export default function SidebarContent({ onClose }: SidebarContentProps) {
+export default function SideNavBar({ onClose }: SidebarContentProps) {
   const pathname = usePathname();
 
   const navItems = [

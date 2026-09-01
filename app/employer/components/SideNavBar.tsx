@@ -1,156 +1,131 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function SideNavBar() {
+interface SideNavBarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
   const pathname = usePathname();
 
-  const mainNavItems = [
-    {
-      label: "Dashboard",
-      href: "/employer/dashboard", // Updated from "/employer"
-      icon: "dashboard",
-    },
-    {
-      label: "My Postings",
-      href: "/employer/postings",
-      icon: "work",
-    },
-    {
-      label: "Post a Job",
-      href: "/employer/post-job",
-      icon: "add_circle",
-    },
-    {
-      label: "Applicants",
-      href: "/employer/applicants",
-      icon: "group",
-    },
-  ];
-
-  const secondaryNavItems = [
-    {
-      label: "Help",
-      href: "/employer/help",
-      icon: "help",
-    },
+  const navItems = [
+    { label: "Dashboard", href: "/employer/dashboard", icon: "dashboard" },
+    { label: "My Postings", href: "/employer/postings", icon: "work" },
+    { label: "Post a Job", href: "/employer/post-job", icon: "add_circle" },
+    { label: "Applicants", href: "/employer/applicants", icon: "group" },
   ];
 
   return (
     <>
-      {/* Desktop Side Navigation Bar */}
-      <aside className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant z-40 p-6 justify-between">
-        {" "}
+      {/* Overlay Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 transition-opacity"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Slide-out Sidebar covering full height */}
+      <aside
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-surface-container-low border-r border-outline-variant z-[60] transform transition-transform duration-200 ease-in-out flex flex-col justify-between p-4 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-2 px-2 pt-2">
-            <span
-              className="material-symbols-outlined text-primary text-3xl"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              corporate_fare
-            </span>
-            <div>
-              <h1 className="text-2xl font-bold text-primary leading-none">
-                Employer
-              </h1>
-              <p className="text-xs text-on-surface-variant mt-1">
-                Hiring Manager
-              </p>
+          {/* Top Header inside Sidebar with Close (X) Button */}
+          {/* Top Header inside Sidebar with Close (X) Button */}
+          <div className="flex items-center justify-between px-2 pt-2">
+            <div className="flex items-center gap-3">
+              {/* Briefcase Badge Icon */}
+              <div className="w-10 h-10 bg-primary text-on-primary rounded-xl flex items-center justify-center shadow-sm">
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  work
+                </span>
+              </div>
+
+              {/* Title Hierarchy */}
+              <div className="flex flex-col">
+                <h2 className="font-bold text-[#1d2975] text-lg leading-snug">
+                  CareerPulse
+                </h2>
+                <p className="text-xs text-slate-500 leading-tight">
+                  Hiring Manager
+                </p>
+              </div>
             </div>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
+              aria-label="Close sidebar"
+            >
+              <span className="material-symbols-outlined text-xl block">
+                close
+              </span>
+            </button>
           </div>
 
+          {/* Action Button */}
           <Link
             href="/employer/post-job"
-            className="w-full bg-secondary hover:bg-secondary-container text-on-secondary text-sm font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            onClick={onClose}
+            className="w-full bg-secondary text-on-secondary py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 hover:bg-secondary-container transition-colors shadow-sm"
           >
-            <span className="material-symbols-outlined">add</span>
+            <span className="material-symbols-outlined text-xl">add</span>
             Post a Job
           </Link>
 
-          <nav className="flex flex-col gap-1 mt-2">
-            {mainNavItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-1">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-4 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                     isActive
-                      ? "text-secondary bg-secondary-fixed"
-                      : "text-on-surface-variant hover:bg-surface-container-high"
+                      ? "bg-secondary-container text-on-secondary-container"
+                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
                   }`}
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    style={
-                      isActive
-                        ? { fontVariationSettings: "'FILL' 1" }
-                        : undefined
-                    }
-                  >
+                  <span className="material-symbols-outlined text-xl">
                     {item.icon}
                   </span>
-                  <span>{item.label}</span>
+                  {item.label}
                 </Link>
               );
             })}
           </nav>
         </div>
-        <nav className="flex flex-col gap-1 mb-2">
-          {secondaryNavItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-4 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-secondary bg-secondary-fixed"
-                    : "text-on-surface-variant hover:bg-surface-container-high"
-                }`}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={
-                    isActive ? { fontVariationSettings: "'FILL' 1" } : undefined
-                  }
-                >
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
 
-          <button className="flex items-center gap-4 px-4 py-2.5 w-full text-left text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer">
-            <span className="material-symbols-outlined">logout</span>
-            <span className="text-sm font-medium">Logout</span>
-          </button>
-        </nav>
-      </aside>
-
-      {/* Mobile Sticky Header */}
-      <header className="md:hidden flex justify-between items-center px-6 w-full h-16 bg-surface border-b border-outline-variant z-30 sticky top-0">
-        <div className="flex items-center gap-2">
-          <span
-            className="material-symbols-outlined text-primary text-2xl"
-            style={{ fontVariationSettings: "'FILL' 1" }}
+        {/* Footer Links */}
+        <div className="border-t border-outline-variant pt-4 flex flex-col gap-1">
+          <Link
+            href="/help"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors"
           >
-            corporate_fare
-          </span>
-          <span className="text-xl font-bold text-primary">CareerPulse</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
-            <span className="material-symbols-outlined">notifications</span>
+            <span className="material-symbols-outlined text-xl">help</span>
+            Help
+          </Link>
+          <button
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors w-full text-left cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-xl">logout</span>
+            Logout
           </button>
-          <button className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
-            <span className="material-symbols-outlined">menu</span>
-          </button>
         </div>
-      </header>
+      </aside>
     </>
   );
 }

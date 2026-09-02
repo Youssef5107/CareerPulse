@@ -39,35 +39,12 @@ export const jobPostSlice = createSlice({
   name: "jobPost",
   initialState,
   reducers: {
-    updateJobDetails: (
-      state,
-      action: PayloadAction<
-        Partial<
-          Omit<JobPostState, "description" | "companyOverview" | "benefits">
-        >
-      >,
-    ) => {
+    updateJobDetails: (state, action: PayloadAction<Partial<JobPostState>>) => {
       Object.assign(state, action.payload);
-    },
-    updateJobDescription: (
-      state,
-      action: PayloadAction<{
-        description?: string;
-        companyOverview?: string;
-        benefits?: string[];
-      }>,
-    ) => {
-      if (action.payload.description !== undefined)
-        state.description = action.payload.description;
-      if (action.payload.companyOverview !== undefined)
-        state.companyOverview = action.payload.companyOverview;
-      if (action.payload.benefits !== undefined)
-        state.benefits = action.payload.benefits;
     },
     resetJobPostForm: () => initialState,
   },
 });
 
-export const { updateJobDetails, updateJobDescription, resetJobPostForm } =
-  jobPostSlice.actions;
+export const { updateJobDetails, resetJobPostForm } = jobPostSlice.actions;
 export default jobPostSlice.reducer;

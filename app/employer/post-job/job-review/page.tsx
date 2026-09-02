@@ -1,68 +1,125 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { resetJobPostForm } from "@/store/features/jobPost/jobPostSlice";
 
 export default function PostJobReviewPage() {
-  const [currentStep, setCurrentStep] = useState<number>(3);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const jobData = useAppSelector((state) => state.jobPost);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const steps = [
-    { id: 1, label: "Job Details" },
-    { id: 2, label: "Description" },
-    { id: 3, label: "Review" },
-  ];
+  // Protection Guard: Ensure all required fields exist before allowing review
+  useEffect(() => {
+    if (!jobData.title || !jobData.employmentType || !jobData.location) {
+      router.replace("/employer/post-job/job-details");
+    } else if (!jobData.description) {
+      router.replace("/employer/post-job/job-description");
+    }
+  }, [jobData, router]);
 
+  const handlePublishJob = async () => {
+    setIsSubmitting(true);
+    try {
+      // Map values to common Prisma/Backend conventions
+      const payload = {
+        ...jobData,
+        // Pass null/undefined instead of empty strings for optional fields
+        companyName: jobData.companyName.trim() || undefined,
+        companyOverview: jobData.companyOverview.trim() || undefined,
+        expirationDate: jobData.expirationDate
+          ? new Date(jobData.expirationDate)
+          : undefined,
+
+        // Numbers
+        salaryMin: jobData.salaryMin ? Number(jobData.salaryMin) : undefined,
+        salaryMax: jobData.salaryMax ? Number(jobData.salaryMax) : undefined,
+
+        // Format Enums if your API expects uppercase / underscore formats
+        employmentType: jobData.employmentType.toUpperCase().replace("-", "_"), // "FULL_TIME"
+        locationType: jobData.locationType.toUpperCase(), // "HYBRID"
+      };
+
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Server validation error detail:", errorData);
+        throw new Error(
+          typeof errorData === "string"
+            ? errorData
+            : errorData.message || "Failed to publish job",
+        );
+      }
+
+      dispatch(resetJobPostForm());
+      router.push("/employer/jobs");
+    } catch (error: unknown) {
+      console.error("Error submitting job:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while publishing the job.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans flex flex-col w-full">
-      {/* Main Content Area */}
       <main className="flex-1 w-full max-w-[900px] mx-auto p-4 md:p-8 flex flex-col justify-between space-y-8">
         <div>
-          {/* Header Title */}
           <h1 className="text-3xl font-extrabold text-slate-900 mb-8">
             Post a New Job
           </h1>
 
-          {/* Stepper Progress Bar */}
+          {/* Stepper */}
           <div className="w-full mb-10 px-4">
             <div className="flex items-center justify-between relative max-w-[650px] mx-auto">
-              {steps.map((step, index) => {
-                const isActive = step.id === currentStep;
-                const isCompleted = step.id < currentStep;
-
-                return (
-                  <React.Fragment key={step.id}>
-                    <div className="flex flex-col items-center z-10">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentStep(step.id)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-colors ${
-                          isActive || isCompleted
-                            ? "bg-[#1d61e8] text-white"
-                            : "bg-[#e2e8f0] text-slate-500"
-                        }`}
-                      >
-                        {step.id}
-                      </button>
-                      <span
-                        className={`text-sm ${
-                          isActive || isCompleted
-                            ? "font-bold text-[#1d61e8]"
-                            : "font-normal text-slate-500"
-                        }`}
-                      >
-                        {step.label}
-                      </span>
-                    </div>
-
-                    {index < steps.length - 1 && (
-                      <div className="flex-1 h-[2px] bg-[#e2e8f0] -mt-7 mx-3" />
-                    )}
-                  </React.Fragment>
-                );
-              })}
+              {[
+                {
+                  id: 1,
+                  label: "Job Details",
+                  path: "/employer/post-job/job-details",
+                },
+                {
+                  id: 2,
+                  label: "Description",
+                  path: "/employer/post-job/job-description",
+                },
+                {
+                  id: 3,
+                  label: "Review",
+                  path: "/employer/post-job/job-review",
+                },
+              ].map((step, index) => (
+                <React.Fragment key={step.id}>
+                  <div className="flex flex-col items-center z-10">
+                    <button
+                      type="button"
+                      onClick={() => router.push(step.path)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 bg-[#1d61e8] text-white"
+                    >
+                      {step.id}
+                    </button>
+                    <span className="text-sm font-bold text-[#1d61e8]">
+                      {step.label}
+                    </span>
+                  </div>
+                  {index < 2 && (
+                    <div className="flex-1 h-[2px] bg-[#e2e8f0] -mt-7 mx-3" />
+                  )}
+                </React.Fragment>
+              ))}
             </div>
           </div>
 
-          {/* Subtitle */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-slate-900 mb-1">
               Review Job Posting
@@ -72,7 +129,6 @@ export default function PostJobReviewPage() {
             </p>
           </div>
 
-          {/* Main Review Content Card */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8 space-y-8">
             {/* Section 1: Job Summary */}
             <section>
@@ -82,7 +138,7 @@ export default function PostJobReviewPage() {
                 </h3>
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(1)}
+                  onClick={() => router.push("/employer/post-job/job-details")}
                   className="text-[#1d61e8] hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-base">
@@ -97,21 +153,23 @@ export default function PostJobReviewPage() {
                     Job Title
                   </p>
                   <p className="text-base text-slate-900 font-medium">
-                    Senior UX Designer
+                    {jobData.title || "—"}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 mb-1">
                     Department
                   </p>
-                  <p className="text-sm text-slate-800">Product & Design</p>
+                  <p className="text-sm text-slate-800 capitalize">
+                    {jobData.department || "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 mb-1">
                     Employment Type
                   </p>
-                  <span className="inline-block bg-slate-100 text-slate-700 border border-slate-200 rounded-md px-2.5 py-1 text-xs font-semibold">
-                    Full-Time
+                  <span className="inline-block bg-slate-100 text-slate-700 border border-slate-200 rounded-md px-2.5 py-1 text-xs font-semibold capitalize">
+                    {jobData.employmentType || "—"}
                   </span>
                 </div>
                 <div>
@@ -122,7 +180,9 @@ export default function PostJobReviewPage() {
                     <span className="material-symbols-outlined text-base text-slate-400">
                       location_on
                     </span>
-                    <span>San Francisco, CA (Hybrid)</span>
+                    <span>
+                      {jobData.location} ({jobData.locationType})
+                    </span>
                   </div>
                 </div>
                 <div>
@@ -130,7 +190,9 @@ export default function PostJobReviewPage() {
                     Salary Range
                   </p>
                   <p className="text-sm text-slate-800">
-                    $120,000 - $150,000 / year
+                    {jobData.salaryMin || jobData.salaryMax
+                      ? `$${jobData.salaryMin || "0"} - $${jobData.salaryMax || "0"} / year`
+                      : "Not specified"}
                   </p>
                 </div>
               </div>
@@ -144,7 +206,9 @@ export default function PostJobReviewPage() {
                 </h3>
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(2)}
+                  onClick={() =>
+                    router.push("/employer/post-job/job-description")
+                  }
                   className="text-[#1d61e8] hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-base">
@@ -154,76 +218,31 @@ export default function PostJobReviewPage() {
                 </button>
               </div>
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 text-slate-700 space-y-4">
-                <p className="text-sm leading-relaxed">
-                  We are looking for a Senior UX Designer to join our
-                  fast-growing Product team. You will be responsible for leading
-                  design initiatives, creating intuitive user experiences, and
-                  collaborating closely with engineering and product management.
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {jobData.description}
                 </p>
-                <div>
-                  <p className="text-sm font-bold text-slate-900 mb-2">
-                    Key Responsibilities:
-                  </p>
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-slate-600">
-                    <li>Lead end-to-end design for major product features.</li>
-                    <li>
-                      Conduct user research and translate insights into
-                      actionable design solutions.
-                    </li>
-                    <li>
-                      Create wireframes, prototypes, and high-fidelity mockups.
-                    </li>
-                    <li>Maintain and evolve our design system.</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            {/* Section 3: Settings */}
-            <section>
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
-                <h3 className="text-lg font-bold text-slate-900">Settings</h3>
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(1)}
-                  className="text-[#1d61e8] hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-base">
-                    edit
-                  </span>
-                  Edit
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
+                {jobData.companyOverview && (
                   <div>
-                    <p className="text-sm font-bold text-slate-900">
-                      Visibility
+                    <p className="text-sm font-bold text-slate-900 mb-1">
+                      Company Overview:
                     </p>
-                    <p className="text-xs text-slate-500">
-                      Who can see this job posting?
+                    <p className="text-sm text-slate-600">
+                      {jobData.companyOverview}
                     </p>
                   </div>
-                  <span className="inline-flex items-center gap-1 bg-blue-100 text-[#1d61e8] rounded-full px-3 py-1 text-xs font-semibold">
-                    <span className="material-symbols-outlined text-sm">
-                      public
-                    </span>
-                    Public
-                  </span>
-                </div>
-                <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
+                )}
+                {jobData.benefits.length > 0 && (
                   <div>
-                    <p className="text-sm font-bold text-slate-900">
-                      Expiration Date
+                    <p className="text-sm font-bold text-slate-900 mb-2">
+                      Selected Benefits:
                     </p>
-                    <p className="text-xs text-slate-500">
-                      When will this posting close?
-                    </p>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-slate-600">
+                      {jobData.benefits.map((b) => (
+                        <li key={b}>{b}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <p className="text-sm font-medium text-slate-800">
-                    Dec 31, 2024
-                  </p>
-                </div>
+                )}
               </div>
             </section>
           </div>
@@ -233,7 +252,7 @@ export default function PostJobReviewPage() {
         <div className="flex items-center justify-between pt-4 border-t border-slate-200">
           <button
             type="button"
-            onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
+            onClick={() => router.push("/employer/post-job/job-description")}
             className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200 flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-sm">
@@ -244,15 +263,11 @@ export default function PostJobReviewPage() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-[#1d61e8] hover:bg-blue-50 transition-colors"
+              disabled={isSubmitting}
+              onClick={handlePublishJob}
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[#1d61e8] text-white hover:bg-blue-700 shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              Save Draft
-            </button>
-            <button
-              type="button"
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[#1d61e8] text-white hover:bg-blue-700 shadow-sm transition-all flex items-center gap-2"
-            >
-              Publish Job
+              {isSubmitting ? "Publishing..." : "Publish Job"}
               <span className="material-symbols-outlined text-sm">send</span>
             </button>
           </div>

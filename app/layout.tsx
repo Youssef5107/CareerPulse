@@ -1,3 +1,4 @@
+import { ReduxProvider } from "@/store/provider";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -29,7 +30,9 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <main>{children}</main>
+        <ReduxProvider>
+          <main>{children}</main>
+        </ReduxProvider>
       </body>
     </html>
   );

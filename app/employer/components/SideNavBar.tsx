@@ -74,7 +74,7 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
 
           {/* Action Button */}
           <Link
-            href="/employer/post-job"
+            href="/employer/post-job/job-details"
             onClick={onClose}
             className="w-full bg-secondary text-on-secondary py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 hover:bg-secondary-container transition-colors shadow-sm"
           >

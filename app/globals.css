@@ -32,6 +32,20 @@
 
   /* Font Family Definition */
   --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  /* Animations & Keyframes */
+  --animate-page-in: page-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes page-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* Custom Utilities */
@@ -49,4 +63,8 @@
     rgba(223, 224, 255, 0.5) 0%,
     rgba(248, 249, 255, 1) 90%
   );
+}
+
+@utility animate-page-in {
+  animation: var(--animate-page-in);
 }

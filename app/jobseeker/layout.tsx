@@ -27,6 +27,9 @@ export default function EmployerLayout({
           </button>
           <Link
             href="/employer/dashboard"
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "auto" });
+            }}
             className="text-xl font-bold text-primary tracking-tight"
           >
             CareerPulse

@@ -5,7 +5,10 @@ import Link from "next/link";
 import { loginWithCredentials } from "@/features/auth";
 
 export default function SignInPage() {
-  const [state, formAction, isPending] = useActionState(loginWithCredentials, undefined);
+  const [state, formAction, isPending] = useActionState(
+    loginWithCredentials,
+    undefined,
+  );
 
   return (
     <div className="bg-background text-on-background font-sans antialiased gradient-bg flex flex-col min-h-screen">
@@ -72,6 +75,9 @@ export default function SignInPage() {
                   Password
                 </label>
                 <Link
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "auto" });
+                  }}
                   href="/auth/forgot-password"
                   className="text-xs text-primary hover:underline font-medium"
                 >
@@ -113,6 +119,9 @@ export default function SignInPage() {
             <p className="text-xs text-on-surface-variant">
               Don&apos;t have an account?{" "}
               <Link
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "auto" });
+                }}
                 href="/auth/signup"
                 className="text-primary hover:underline font-medium"
               >

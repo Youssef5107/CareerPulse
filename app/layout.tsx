@@ -1,4 +1,5 @@
 import { ReduxProvider } from "@/store/provider";
+import PageTransition from "./components/PageTransition";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <link
@@ -31,7 +32,7 @@ export default function RootLayout({
       </head>
       <body>
         <ReduxProvider>
-          <main>{children}</main>
+          <PageTransition>{children}</PageTransition>
         </ReduxProvider>
       </body>
     </html>

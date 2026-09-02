@@ -79,7 +79,10 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
           {/* Action Button */}
           <Link
             href="/employer/post-job/job-details"
-            onClick={onClose}
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "auto" });
+              onClose();
+            }}
             className="w-full bg-secondary text-on-secondary py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 hover:bg-secondary-container transition-colors shadow-sm"
           >
             <span className="material-symbols-outlined text-xl">add</span>
@@ -94,7 +97,10 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={onClose}
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "auto" });
+                    onClose();
+                  }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-secondary-container text-on-secondary-container"
@@ -115,7 +121,10 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
         <div className="border-t border-outline-variant pt-4 flex flex-col gap-1">
           <Link
             href="/help"
-            onClick={onClose}
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "auto" });
+              onClose();
+            }}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors"
           >
             <span className="material-symbols-outlined text-xl">help</span>

@@ -151,7 +151,9 @@ export default function SignUpPage() {
               disabled={isPending}
               className="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:translate-y-0"
             >
-              <span>{isPending ? "Creating account..." : "Create Account"}</span>
+              <span>
+                {isPending ? "Creating account..." : "Create Account"}
+              </span>
               <span className="material-symbols-outlined text-[20px]">
                 arrow_forward
               </span>
@@ -161,11 +163,23 @@ export default function SignUpPage() {
           <div className="mt-6 text-center">
             <p className="text-xs text-on-surface-variant">
               By signing up, you agree to our{" "}
-              <Link href="/terms" className="text-primary hover:underline font-medium">
+              <Link
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "auto" });
+                }}
+                href="/terms"
+                className="text-primary hover:underline font-medium"
+              >
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-primary hover:underline font-medium">
+              <Link
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "auto" });
+                }}
+                href="/privacy"
+                className="text-primary hover:underline font-medium"
+              >
                 Privacy Policy
               </Link>
               .
@@ -175,7 +189,13 @@ export default function SignUpPage() {
           <div className="mt-6 text-center">
             <p className="text-xs text-on-surface-variant">
               Already have an account?{" "}
-              <Link href="/auth/signin" className="text-primary hover:underline font-medium">
+              <Link
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "auto" });
+                }}
+                href="/auth/signin"
+                className="text-primary hover:underline font-medium"
+              >
                 Sign In
               </Link>
             </p>

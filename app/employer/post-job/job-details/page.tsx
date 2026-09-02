@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 export default function PostJobPage() {
   const [locationType, setLocationType] = useState<
@@ -210,7 +211,8 @@ export default function PostJobPage() {
               >
                 Cancel
               </button>
-              <button
+              <Link
+                href={"/employer/post-job/job-description"}
                 type="button"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition text-sm flex items-center justify-center gap-2 shadow-sm"
               >
@@ -218,7 +220,7 @@ export default function PostJobPage() {
                 <span className="material-symbols-outlined text-lg">
                   arrow_forward
                 </span>
-              </button>
+              </Link>
             </div>
           </form>
         </div>

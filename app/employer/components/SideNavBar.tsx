@@ -15,7 +15,11 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
   const navItems = [
     { label: "Dashboard", href: "/employer/dashboard", icon: "dashboard" },
     { label: "My Postings", href: "/employer/postings", icon: "work" },
-    { label: "Post a Job", href: "/employer/post-job", icon: "add_circle" },
+    {
+      label: "Post a Job",
+      href: "/employer/post-job/job-details",
+      icon: "add_circle",
+    },
     { label: "Applicants", href: "/employer/applicants", icon: "group" },
   ];
 

@@ -72,15 +72,15 @@ model Job {
   title           String
   company         String
   location        String
-  type            String    // Employment Type e.g., "Full-time"
-  category        String    // Department mapped directly to Category
-  locationType    String    @default("onsite") // "onsite" | "hybrid" | "remote"
+  type            String   
+  category        String   
+  locationType    String    @default("onsite")
   description     String    @db.Text
   companyOverview String?   @db.Text
   salary          String
   requirements    String[]  @default([])
   benefits        String[]  @default([])
-  visibility      String    @default("PUBLIC") // "PUBLIC" | "PRIVATE"
+  visibility      String    @default("PUBLIC")
   expirationDate  DateTime?
   isExpired       Boolean   @default(false)
 

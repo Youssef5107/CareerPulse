@@ -16,6 +16,8 @@ enum Role {
   EMPLOYER
 }
 
+// schema.prisma
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -26,10 +28,40 @@ model User {
 
   role          Role?
 
+  profile       Profile?
   accounts      Account[]
   sessions      Session[]
-  jobs          Job[]     @relation("postedJobs")
+  jobs          Job[]         @relation("postedJobs")
   applications  Application[]
+}
+
+model Profile {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  headline       String?        
+  location       String?         
+  phone          String?        
+  summary        String?          @db.Text
+  skills         String[]         @default([])
+  cvUrl          String?         
+  recruiterNotes String?          @db.Text
+  matchScore     Int?             @default(90)
+
+  experiences    WorkExperience[]
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WorkExperience {
+  id          String   @id @default(cuid())
+  profileId   String
+  title       String   
+  company     String   
+  location    String? 
+  startDate   String   
+  endDate     String? 
+  description String?  @db.Text
+
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Account {

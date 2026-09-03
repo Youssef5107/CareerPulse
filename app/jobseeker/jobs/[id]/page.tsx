@@ -1,7 +1,10 @@
+// app/jobseeker/jobs/[id]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { PrismaClient } from "@/app/generated/prisma";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth"; // Adjust to your auth setup
+import ApplyButton from "../../components/ApplyButton";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +16,7 @@ interface JobDetailsPageProps {
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params;
+  const session = await auth();
 
   const job = await prisma.job.findUnique({
     where: { id },
@@ -20,6 +24,20 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
 
   if (!job) {
     notFound();
+  }
+
+  // Check if current user has already applied
+  let hasApplied = false;
+  if (session?.user?.id) {
+    const existingApp = await prisma.application.findUnique({
+      where: {
+        jobId_userId: {
+          jobId: job.id,
+          userId: session.user.id,
+        },
+      },
+    });
+    hasApplied = !!existingApp;
   }
 
   return (
@@ -63,7 +81,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
 
         {/* Hero Job Header */}
         <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30 mb-6">
-          {/* Header Top Row: Logo + Title + Status */}
           <div className="flex items-start gap-3.5 md:gap-5 mb-4">
             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-[#e7e8ee] border border-[#c6c5d3]/20 shrink-0 flex items-center justify-center font-bold text-base md:text-lg text-[#454651]">
               {job.company.slice(0, 2).toUpperCase()}
@@ -113,27 +130,12 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3 pt-1">
-            <button className="flex-1 sm:flex-initial sm:w-48 bg-[#142175] text-white text-sm font-semibold h-11 px-5 rounded-xl shadow-sm hover:bg-[#2e3a8c] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2">
-              <span>Apply Now</span>
-              <span className="material-symbols-outlined text-lg">
-                arrow_forward
-              </span>
-            </button>
-            <button className="flex-1 sm:flex-initial sm:w-48 bg-[#f8f9ff] text-[#142175] border border-[#767682]/40 text-sm font-semibold h-11 px-5 rounded-xl hover:bg-[#eff4ff] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-lg">
-                bookmark
-              </span>
-              <span>Save Job</span>
-            </button>
-          </div>
+          <ApplyButton jobId={job.id} hasApplied={hasApplied} />
         </div>
 
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Role Details */}
             <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
               <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
                 About the Role
@@ -143,7 +145,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </p>
             </div>
 
-            {/* Dynamic Requirements */}
             {job.requirements && job.requirements.length > 0 && (
               <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
                 <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
@@ -162,7 +163,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </div>
             )}
 
-            {/* Dynamic Benefits */}
             {job.benefits && job.benefits.length > 0 && (
               <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
                 <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
@@ -189,7 +189,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
               <h3 className="text-[11px] font-semibold text-[#454651] mb-3 uppercase tracking-wider">

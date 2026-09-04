@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth"; // 1. Import NextAuth session helper
 
-// Mock retrieving currently authenticated user session ID
+// Retrieve the actual authenticated user ID from NextAuth session
 async function getAuthUserId() {
-  // Replace with your authentication provider (e.g., NextAuth, Clerk)
-  return "user_cuid_123456";
+  const session = await auth();
+  return session?.user?.id || null;
 }
 
 // 1. GET: Fetch complete user profile data
 export async function GET() {
   try {
     const userId = await getAuthUserId();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -40,6 +46,11 @@ export async function GET() {
 export async function PATCH(req: Request) {
   try {
     const userId = await getAuthUserId();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
 
     const updatedUser = await prisma.user.update({
@@ -97,6 +108,11 @@ export async function PATCH(req: Request) {
 export async function POST(req: Request) {
   try {
     const userId = await getAuthUserId();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { type, data } = await req.json();
 
     // Fetch user's profile ID based on auth user

@@ -20,10 +20,12 @@ enum Role {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
+  name          String?   
+  firstName     String?   
+  lastName      String?   
   email         String?   @unique
   emailVerified DateTime?
-  image         String?
+  image         String?   
   password      String?
 
   role          Role?
@@ -38,16 +40,18 @@ model User {
 model Profile {
   id             String           @id @default(cuid())
   userId         String           @unique
-  headline       String?        
-  location       String?         
+  headline       String?          
+  location       String?       
   phone          String?        
   summary        String?          @db.Text
   skills         String[]         @default([])
   cvUrl          String?         
+  bannerUrl      String?       
   recruiterNotes String?          @db.Text
   matchScore     Int?             @default(90)
 
   experiences    WorkExperience[]
+  educations     Education[]   
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -62,6 +66,18 @@ model WorkExperience {
   description String?  @db.Text
 
   profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id           String   @id @default(cuid())
+  profileId    String
+  institution  String   
+  degree       String   
+  fieldOfStudy String?
+  startDate    String   
+  endDate      String? 
+
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Account {

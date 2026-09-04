@@ -1,59 +1,286 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
+interface WorkExperience {
+  id: string;
+  title: string;
+  company: string;
+  startDate: string;
+  endDate?: string | null;
+  description?: string | null;
+}
+
+interface Education {
+  id: string;
+  institution: string;
+  degree: string;
+  startDate: string;
+  endDate?: string | null;
+}
+
+interface UserProfile {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  image?: string;
+  profile?: {
+    id: string;
+    headline?: string;
+    location?: string;
+    phone?: string;
+    summary?: string;
+    skills: string[];
+    cvUrl?: string;
+    bannerUrl?: string;
+    experiences: WorkExperience[];
+    educations: Education[];
+  };
+}
+
 export default function ProfilePage() {
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // File Upload References
+  const cvInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Modals and Forms State
+  const [activeModal, setActiveModal] = useState<
+    "basic" | "experience" | "education" | null
+  >(null);
+  const [basicForm, setBasicForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    location: "",
+    headline: "",
+  });
+  const [newSkill, setNewSkill] = useState("");
+  const [expForm, setExpForm] = useState({
+    title: "",
+    company: "",
+    startDate: "",
+    endDate: "",
+    description: "",
+  });
+  const [eduForm, setEduForm] = useState({
+    institution: "",
+    degree: "",
+    startDate: "",
+    endDate: "",
+  });
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setUserData(data);
+      }
+    } catch (error) {
+      console.error("Failed to load profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetchProfile();
+    }, 0);
+  }, []);
+
+  // Send updates to backend via PATCH
+  const saveProfileData = async (payload: Record<string, unknown>) => {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setUserData(updated);
+        setActiveModal(null);
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  // Upload Resume File Handler
+  const handleCVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        saveProfileData({ cvUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload Profile Picture File Handler
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        saveProfileData({ image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Create Experience or Education Entries via POST
+  const handleAddDetail = async (
+    type: "experience" | "education",
+    data: Record<string, string>,
+  ) => {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, data }),
+      });
+
+      if (res.ok) {
+        fetchProfile();
+        setActiveModal(null);
+        if (type === "experience") {
+          setExpForm({
+            title: "",
+            company: "",
+            startDate: "",
+            endDate: "",
+            description: "",
+          });
+        } else {
+          setEduForm({
+            institution: "",
+            degree: "",
+            startDate: "",
+            endDate: "",
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to add ${type}:`, error);
+    }
+  };
+
+  // Add Skill Handler
+  const handleAddSkill = () => {
+    if (!newSkill.trim() || !userData) return;
+    const currentSkills = userData.profile?.skills || [];
+    saveProfileData({ skills: [...currentSkills, newSkill.trim()] });
+    setNewSkill("");
+  };
+
+  if (loading) {
+    return (
+      <div className="p-12 text-center text-slate-500 font-semibold">
+        Loading Profile...
+      </div>
+    );
+  }
+
+  const profile = userData?.profile;
+
   return (
     <div className="flex-1 p-4 md:p-12 max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row gap-6">
-      {/* Left Column: Primary Profile Info */}
+      {/* Invisible HTML File Inputs */}
+      <input
+        type="file"
+        ref={cvInputRef}
+        onChange={handleCVUpload}
+        accept=".pdf,.doc,.docx"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={avatarInputRef}
+        onChange={handleAvatarUpload}
+        accept="image/*"
+        className="hidden"
+      />
+
+      {/* Main Column */}
       <div className="flex-1 flex flex-col gap-6">
-        {/* Profile Banner & Basic Info Card */}
+        {/* Banner and Header Info */}
         <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
-          {/* Banner Image */}
           <div className="h-48 w-full bg-slate-200 relative">
-            <Image
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCobtFn7AVbo-pF5clV2-ePkP92qQKqH0khhYpj_4BwSiBoy3jhxLdIGclddPGh15vI9xMdBz4-jZoCNqA-u27Umy2G-1lwI2R2miZre7smm98_oVI-MjovV0YVlZwmc03GGUriPMt2xJy1lQ1sJ3lvOZT1nmxgsqc-uC9LX_T-oj9Ri4il4WpnYltylNkNmzl1NbCrlESNgqgTKgcyHaPGzzl23Rx-g8y_rhpx9Odon2T0kdQytQ"
-              alt="Profile banner"
-              fill
-              className="object-cover"
-            />
-            <button className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full backdrop-blur-sm transition-colors shadow-sm">
-              <span className="material-symbols-outlined text-[20px]">
-                edit
-              </span>
-            </button>
+            {profile?.bannerUrl && (
+              <Image
+                src={profile.bannerUrl}
+                alt="Banner"
+                fill
+                className="object-cover"
+              />
+            )}
           </div>
 
-          {/* Avatar & Info */}
           <div className="px-6 pb-6 relative">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end -mt-16 sm:-mt-12 mb-4 gap-4">
-              {/* Avatar */}
+              {/* Profile Avatar with Upload Camera Button */}
               <div className="relative">
-                <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden relative bg-slate-100 shadow-sm z-10">
-                  <Image
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoL8Ml0L1amlkDAV5_NcE-PyuE8bz6r_aeD9Lf5DQYnLi5p1eWi0TYFugCG--5Rjf8tZql8GOdHkOpdwwQz9SgRzFVqPOUnYSc6mC-1FOzfqU35xvXL-M0mQpI9aYU1NBqrsLmrqjsFCgcX3LmlYDO2Ys07oKB67YfmRVlWhFlKNBcyZ0BU3il4t8TVoK3FfsRbf2ALfOgq0uhAuPvGlyMy9DKEa0AZphJH8v5GRnhqpstHkoEJQ"
-                    alt="Alex Reynolds"
-                    fill
-                    className="object-cover"
-                  />
+                <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden relative bg-slate-100 shadow-sm z-10 flex items-center justify-center">
+                  {userData?.image ? (
+                    <Image
+                      src={userData.image}
+                      alt="Profile"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined text-[48px] text-slate-400">
+                      person
+                    </span>
+                  )}
                 </div>
-                <button className="absolute bottom-0 right-0 bg-[#142175] text-white p-1.5 rounded-full shadow-md hover:bg-[#2e3a8c] transition-colors z-20">
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 bg-[#142175] text-white p-1.5 rounded-full shadow-md hover:bg-[#2e3a8c] transition-colors z-20"
+                  title="Upload Profile Picture"
+                >
                   <span className="material-symbols-outlined text-[16px]">
                     photo_camera
                   </span>
                 </button>
               </div>
 
-              {/* Actions */}
+              {/* Upload Resume and Edit Profile Buttons */}
               <div className="flex gap-2">
-                <button className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-colors flex items-center gap-1">
+                <button
+                  onClick={() => cvInputRef.current?.click()}
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-colors flex items-center gap-1"
+                >
                   <span className="material-symbols-outlined text-[18px]">
-                    download
+                    upload_file
                   </span>
-                  Resume
+                  {profile?.cvUrl ? "Change Resume" : "Upload Resume"}
                 </button>
-                <button className="px-6 py-2 rounded-lg bg-[#142175] text-white font-semibold text-xs hover:bg-[#142175]/90 hover:-translate-y-[1px] transition-all shadow-sm flex items-center gap-1">
+
+                <button
+                  onClick={() => {
+                    setBasicForm({
+                      firstName: userData?.firstName || "",
+                      lastName: userData?.lastName || "",
+                      email: userData?.email || "",
+                      phone: profile?.phone || "",
+                      location: profile?.location || "",
+                      headline: profile?.headline || "",
+                    });
+                    setActiveModal("basic");
+                  }}
+                  className="px-6 py-2 rounded-lg bg-[#142175] text-white font-semibold text-xs hover:bg-[#142175]/90 transition-all shadow-sm flex items-center gap-1"
+                >
                   <span className="material-symbols-outlined text-[18px]">
                     edit
                   </span>
@@ -62,32 +289,34 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Text Info */}
+            {/* Dynamic User Profile Text */}
             <div>
               <h2 className="text-3xl font-bold text-slate-900 mb-1">
-                Alex Reynolds
+                {userData?.firstName || userData?.lastName
+                  ? `${userData?.firstName || ""} ${userData?.lastName || ""}`
+                  : "Add Your Name"}
               </h2>
               <p className="text-base text-slate-500 mb-4">
-                Senior UX/UI Designer crafting user-centric digital experiences.
+                {profile?.headline || "No headline provided yet."}
               </p>
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[18px]">
                     location_on
                   </span>
-                  San Francisco, CA
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[18px]">
-                    business_center
-                  </span>
-                  8+ Years Experience
+                  {profile?.location || "Location not specified"}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[18px]">
                     mail
                   </span>
-                  alex.reynolds@example.com
+                  {userData?.email || "No email provided"}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[18px]">
+                    call
+                  </span>
+                  {profile?.phone || "No phone added"}
                 </span>
               </div>
             </div>
@@ -103,65 +332,39 @@ export default function ProfilePage() {
               </span>
               Experience
             </h3>
-            <button className="text-[#142175] hover:bg-slate-50 p-2 rounded-full transition-colors">
+            <button
+              onClick={() => setActiveModal("experience")}
+              className="text-[#142175] hover:bg-slate-50 p-2 rounded-full transition-colors"
+            >
               <span className="material-symbols-outlined">add</span>
             </button>
           </div>
 
-          {/* Timeline */}
-          <div className="relative border-l-2 border-slate-200 ml-2 space-y-6 pl-6 pb-2">
-            {/* Item 1 */}
-            <div className="relative">
-              <span className="absolute -left-[31px] top-1 bg-white border-2 border-[#142175] w-4 h-4 rounded-full"></span>
-              <div className="flex justify-between items-start mb-1">
-                <h4 className="text-lg font-semibold text-slate-900">
-                  Senior Product Designer
-                </h4>
-                <button className="text-slate-400 hover:text-[#142175] transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">
-                    edit
-                  </span>
-                </button>
-              </div>
-              <p className="text-xs font-semibold text-[#142175] mb-1">
-                TechCorp Inc. • Full-time
-              </p>
-              <p className="text-xs font-semibold text-slate-400 mb-2">
-                Jan 2020 - Present • 4 yrs
-              </p>
-              <p className="text-sm text-slate-600">
-                Lead designer for the core SaaS platform. Spearheaded the
-                redesign of the user dashboard resulting in a 40% increase in
-                user engagement. Mentored junior designers.
-              </p>
+          {profile?.experiences && profile.experiences.length > 0 ? (
+            <div className="relative border-l-2 border-slate-200 ml-2 space-y-6 pl-6 pb-2">
+              {profile.experiences.map((exp) => (
+                <div key={exp.id} className="relative">
+                  <span className="absolute -left-[31px] top-1 bg-white border-2 border-[#142175] w-4 h-4 rounded-full"></span>
+                  <h4 className="text-lg font-semibold text-slate-900">
+                    {exp.title}
+                  </h4>
+                  <p className="text-xs font-semibold text-[#142175] mb-1">
+                    {exp.company}
+                  </p>
+                  <p className="text-xs font-semibold text-slate-400 mb-2">
+                    {exp.startDate} - {exp.endDate || "Present"}
+                  </p>
+                  {exp.description && (
+                    <p className="text-sm text-slate-600">{exp.description}</p>
+                  )}
+                </div>
+              ))}
             </div>
-
-            {/* Item 2 */}
-            <div className="relative">
-              <span className="absolute -left-[31px] top-1 bg-slate-300 border-2 border-slate-300 w-4 h-4 rounded-full"></span>
-              <div className="flex justify-between items-start mb-1">
-                <h4 className="text-lg font-semibold text-slate-900">
-                  UX Designer
-                </h4>
-                <button className="text-slate-400 hover:text-[#142175] transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">
-                    edit
-                  </span>
-                </button>
-              </div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">
-                Creative Solutions Agency
-              </p>
-              <p className="text-xs font-semibold text-slate-400 mb-2">
-                Mar 2016 - Dec 2019 • 3 yrs 10 mos
-              </p>
-              <p className="text-sm text-slate-600">
-                Worked on varied client projects ranging from e-commerce to
-                healthcare apps. Conducted user research, wireframing, and
-                high-fidelity prototyping.
-              </p>
-            </div>
-          </div>
+          ) : (
+            <p className="text-sm text-slate-400 italic">
+              No work experience added yet.
+            </p>
+          )}
         </section>
 
         {/* Education Section */}
@@ -173,125 +376,294 @@ export default function ProfilePage() {
               </span>
               Education
             </h3>
-            <button className="text-[#142175] hover:bg-slate-50 p-2 rounded-full transition-colors">
+            <button
+              onClick={() => setActiveModal("education")}
+              className="text-[#142175] hover:bg-slate-50 p-2 rounded-full transition-colors"
+            >
               <span className="material-symbols-outlined">add</span>
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-start gap-4 group">
-              <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-slate-600">
-                  account_balance
-                </span>
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <h4 className="text-base font-semibold text-slate-900">
-                    University of Design
-                  </h4>
-                  <button className="text-slate-400 hover:text-[#142175] transition-colors opacity-0 group-hover:opacity-100">
-                    <span className="material-symbols-outlined text-[20px]">
-                      edit
+          {profile?.educations && profile.educations.length > 0 ? (
+            <div className="space-y-4">
+              {profile.educations.map((edu) => (
+                <div key={edu.id} className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-slate-600">
+                      account_balance
                     </span>
-                  </button>
+                  </div>
+                  <div>
+                    <h4 className="text-base font-semibold text-slate-900">
+                      {edu.institution}
+                    </h4>
+                    <p className="text-sm text-slate-600">{edu.degree}</p>
+                    <p className="text-xs font-semibold text-slate-400 mt-1">
+                      {edu.startDate} - {edu.endDate || "Present"}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-600">
-                  Bachelor of Arts in Interaction Design
-                </p>
-                <p className="text-xs font-semibold text-slate-400 mt-1">
-                  2012 - 2016
-                </p>
-              </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 italic">
+              No education history added yet.
+            </p>
+          )}
+        </section>
+      </div>
+
+      {/* Right Column: Skills */}
+      <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
+        <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Skills</h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {profile?.skills && profile.skills.length > 0 ? (
+              profile.skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-blue-50 text-[#142175] text-xs font-semibold rounded-full border border-blue-100"
+                >
+                  {skill}
+                </span>
+              ))
+            ) : (
+              <p className="text-xs text-slate-400 italic">
+                No skills listed yet.
+              </p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Add skill..."
+              className="w-full text-xs p-2 border border-slate-200 rounded-lg outline-none focus:border-[#142175]"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+            />
+            <button
+              onClick={handleAddSkill}
+              className="px-3 py-1.5 bg-[#142175] text-white text-xs rounded-lg hover:bg-[#2e3a8c]"
+            >
+              Add
+            </button>
+          </div>
+        </section>
+      </div>
+
+      {/* Edit Basic Profile Modal */}
+      {activeModal === "basic" && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              Edit Basic Profile Details
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="First Name"
+                className="border p-2 rounded text-sm outline-none focus:border-[#142175]"
+                value={basicForm.firstName}
+                onChange={(e) =>
+                  setBasicForm({ ...basicForm, firstName: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                className="border p-2 rounded text-sm outline-none focus:border-[#142175]"
+                value={basicForm.lastName}
+                onChange={(e) =>
+                  setBasicForm({ ...basicForm, lastName: e.target.value })
+                }
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Headline / Professional Title"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={basicForm.headline}
+              onChange={(e) =>
+                setBasicForm({ ...basicForm, headline: e.target.value })
+              }
+            />
+            <input
+              type="email"
+              placeholder="Email Address"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={basicForm.email}
+              onChange={(e) =>
+                setBasicForm({ ...basicForm, email: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Phone Number"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={basicForm.phone}
+              onChange={(e) =>
+                setBasicForm({ ...basicForm, phone: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Location"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={basicForm.location}
+              onChange={(e) =>
+                setBasicForm({ ...basicForm, location: e.target.value })
+              }
+            />
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="px-4 py-2 text-xs border rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => saveProfileData(basicForm)}
+                className="px-4 py-2 text-xs bg-[#142175] text-white rounded-lg"
+              >
+                Save Changes
+              </button>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      )}
 
-      {/* Right Column: Secondary Widgets */}
-      <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
-        {/* Profile Strength Widget */}
-        <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h3 className="text-xs font-semibold text-slate-500 mb-4 uppercase tracking-wider">
-            Profile Strength
-          </h3>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-lg font-semibold text-slate-900">
-              Intermediate
-            </span>
-            <span className="text-xs font-semibold text-[#142175]">70%</span>
+      {/* Add Experience Modal */}
+      {activeModal === "experience" && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              Add Work Experience
+            </h3>
+            <input
+              type="text"
+              placeholder="Job Title"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={expForm.title}
+              onChange={(e) =>
+                setExpForm({ ...expForm, title: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Company Name"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={expForm.company}
+              onChange={(e) =>
+                setExpForm({ ...expForm, company: e.target.value })
+              }
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Start Date (e.g. Jan 2022)"
+                className="border p-2 rounded text-sm outline-none focus:border-[#142175]"
+                value={expForm.startDate}
+                onChange={(e) =>
+                  setExpForm({ ...expForm, startDate: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="End Date (e.g. Present)"
+                className="border p-2 rounded text-sm outline-none focus:border-[#142175]"
+                value={expForm.endDate}
+                onChange={(e) =>
+                  setExpForm({ ...expForm, endDate: e.target.value })
+                }
+              />
+            </div>
+            <textarea
+              placeholder="Description"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              rows={3}
+              value={expForm.description}
+              onChange={(e) =>
+                setExpForm({ ...expForm, description: e.target.value })
+              }
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="px-4 py-2 text-xs border rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleAddDetail("experience", expForm)}
+                className="px-4 py-2 text-xs bg-[#142175] text-white rounded-lg"
+              >
+                Save Experience
+              </button>
+            </div>
           </div>
+        </div>
+      )}
 
-          <div className="w-full h-2 bg-slate-100 rounded-full mb-4 overflow-hidden">
-            <div className="h-full bg-[#142175] w-[70%] rounded-full"></div>
+      {/* Add Education Modal */}
+      {activeModal === "education" && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">Add Education</h3>
+            <input
+              type="text"
+              placeholder="Institution Name"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={eduForm.institution}
+              onChange={(e) =>
+                setEduForm({ ...eduForm, institution: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Degree / Major"
+              className="w-full border p-2 rounded text-sm outline-none focus:border-[#142175]"
+              value={eduForm.degree}
+              onChange={(e) =>
+                setEduForm({ ...eduForm, degree: e.target.value })
+              }
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Start Date (e.g. 2018)"
+                className="border p-2 rounded text-sm outline-none focus:border-[#142175]"
+                value={eduForm.startDate}
+                onChange={(e) =>
+                  setEduForm({ ...eduForm, startDate: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="End Date (e.g. 2022)"
+                className="border p-2 rounded text-sm outline-none focus:border-[#142175]"
+                value={eduForm.endDate}
+                onChange={(e) =>
+                  setEduForm({ ...eduForm, endDate: e.target.value })
+                }
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="px-4 py-2 text-xs border rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleAddDetail("education", eduForm)}
+                className="px-4 py-2 text-xs bg-[#142175] text-white rounded-lg"
+              >
+                Save Education
+              </button>
+            </div>
           </div>
-
-          <p className="text-sm text-slate-500 mb-4">
-            Complete your profile to stand out to recruiters.
-          </p>
-
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-1.5 text-slate-900">
-              <span className="material-symbols-outlined text-[#142175] text-[16px]">
-                check_circle
-              </span>
-              Add Education
-            </li>
-            <li className="flex items-center gap-1.5 text-slate-900">
-              <span className="material-symbols-outlined text-[#142175] text-[16px]">
-                check_circle
-              </span>
-              Add Experience
-            </li>
-            <li className="flex items-center gap-1.5 text-slate-400">
-              <span className="material-symbols-outlined text-slate-400 text-[16px]">
-                radio_button_unchecked
-              </span>
-              Upload Resume
-            </li>
-            <li className="flex items-center gap-1.5 text-slate-400">
-              <span className="material-symbols-outlined text-slate-400 text-[16px]">
-                radio_button_unchecked
-              </span>
-              Add Skills
-            </li>
-          </ul>
-        </section>
-
-        {/* Skills Section */}
-        <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-slate-900">Skills</h3>
-            <button className="text-[#142175] hover:bg-slate-50 p-2 rounded-full transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
-                edit
-              </span>
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <span className="px-3 py-1 bg-blue-50 text-[#142175] text-xs font-semibold rounded-full border border-blue-100">
-              UI Design
-            </span>
-            <span className="px-3 py-1 bg-blue-50 text-[#142175] text-xs font-semibold rounded-full border border-blue-100">
-              UX Research
-            </span>
-            <span className="px-3 py-1 bg-blue-50 text-[#142175] text-xs font-semibold rounded-full border border-blue-100">
-              Figma
-            </span>
-            <span className="px-3 py-1 bg-blue-50 text-[#142175] text-xs font-semibold rounded-full border border-blue-100">
-              Prototyping
-            </span>
-            <span className="px-3 py-1 bg-blue-50 text-[#142175] text-xs font-semibold rounded-full border border-blue-100">
-              Wireframing
-            </span>
-            <button className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full border border-slate-300 border-dashed hover:bg-slate-200 cursor-pointer transition-colors flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">add</span>{" "}
-              Add Skill
-            </button>
-          </div>
-        </section>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

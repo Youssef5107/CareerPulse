@@ -42,7 +42,8 @@ export async function GET() {
   }
 }
 
-// 2. PATCH: Update user basic details, CV URL, avatar, or skills
+// app/api/profile/route.ts
+
 export async function PATCH(req: Request) {
   try {
     const userId = await getAuthUserId();
@@ -56,14 +57,14 @@ export async function PATCH(req: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
+        ...(body.firstName !== undefined && { firstName: body.firstName }),
+        ...(body.lastName !== undefined && { lastName: body.lastName }),
         name:
           body.firstName && body.lastName
             ? `${body.firstName} ${body.lastName}`
             : undefined,
-        email: body.email,
-        image: body.image,
+        ...(body.email !== undefined && { email: body.email }),
+        ...(body.image !== undefined && { image: body.image }),
         profile: {
           upsert: {
             create: {
@@ -75,12 +76,12 @@ export async function PATCH(req: Request) {
               skills: body.skills || [],
             },
             update: {
-              headline: body.headline,
-              location: body.location,
-              phone: body.phone,
-              summary: body.summary,
-              cvUrl: body.cvUrl,
-              skills: body.skills,
+              ...(body.headline !== undefined && { headline: body.headline }),
+              ...(body.location !== undefined && { location: body.location }),
+              ...(body.phone !== undefined && { phone: body.phone }),
+              ...(body.summary !== undefined && { summary: body.summary }),
+              ...(body.cvUrl !== undefined && { cvUrl: body.cvUrl }),
+              ...(body.skills !== undefined && { skills: body.skills }),
             },
           },
         },

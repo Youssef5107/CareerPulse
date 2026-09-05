@@ -115,6 +115,12 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum JobStatus {
+  ACTIVE
+  DRAFT
+  CLOSED
+}
+
 model Job {
   id              String    @id @default(cuid())
   title           String
@@ -129,6 +135,7 @@ model Job {
   requirements    String[]  @default([])
   benefits        String[]  @default([])
   visibility      String    @default("PUBLIC")
+  status          JobStatus @default(ACTIVE)
   expirationDate  DateTime?
   isExpired       Boolean   @default(false)
 

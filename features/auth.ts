@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 import { AuthError } from "next-auth";
-import { signIn, signOut } from "@/lib/auth";
+import { auth, signIn, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export type AuthActionState = { success?: boolean; error?: string } | undefined;
@@ -12,10 +12,14 @@ export const loginWithCredentials = async (
   formData: FormData,
 ): Promise<AuthActionState> => {
   try {
+    const session = await auth();
     await signIn("credentials", {
       email: formData.get("email"),
       password: formData.get("password"),
-      redirectTo: "/auth/redirect-role", // NextAuth handles role redirect after login
+      redirectTo:
+        session?.user.role === "JOB_SEEKER"
+          ? "/jobseeker/home"
+          : "/employer/dashboard",
     });
   } catch (error) {
     if (error instanceof AuthError) {

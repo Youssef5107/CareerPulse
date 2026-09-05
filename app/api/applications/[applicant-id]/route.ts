@@ -28,6 +28,7 @@ export async function GET(request: Request, context: RouteParams) {
             profile: {
               include: {
                 experiences: true,
+                educations: true,
               },
             },
           },
@@ -44,7 +45,7 @@ export async function GET(request: Request, context: RouteParams) {
 
     const payload = {
       applicationId: application.id,
-      status: application.status,
+      status: application.status ?? "PENDING",
       appliedAt: application.appliedAt.toISOString(),
       jobTitle: application.job.title,
       candidate: {
@@ -62,6 +63,7 @@ export async function GET(request: Request, context: RouteParams) {
           application.user.profile?.recruiterNotes ??
           "No recruiter notes available.",
         experiences: application.user.profile?.experiences ?? [],
+        educations: application.user.profile?.educations ?? [],
       },
     };
 

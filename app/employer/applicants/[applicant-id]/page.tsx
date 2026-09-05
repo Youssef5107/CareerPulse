@@ -16,6 +16,15 @@ interface Experience {
   description?: string | null;
 }
 
+interface Education {
+  id: string;
+  institution: string;
+  degree: string;
+  fieldOfStudy?: string | null;
+  startDate: string;
+  endDate?: string | null;
+}
+
 interface ApplicantDetailData {
   applicationId: string;
   status: string;
@@ -34,6 +43,7 @@ interface ApplicantDetailData {
     matchScore: number;
     recruiterNotes: string;
     experiences: Experience[];
+    educations: Education[];
   };
 }
 
@@ -78,6 +88,19 @@ export default function ApplicantDetailPage() {
       });
     } catch (err) {
       console.error("Failed to update status", err);
+    }
+  };
+
+  const handleDownloadCV = (cvUrl: string, candidateName?: string) => {
+    if (cvUrl.startsWith("data:")) {
+      const link = document.createElement("a");
+      link.href = cvUrl;
+      link.download = `${candidateName || "candidate"}-CV.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      window.open(cvUrl, "_blank");
     }
   };
 
@@ -161,17 +184,17 @@ export default function ApplicantDetailPage() {
 
           <div className="flex items-center gap-3">
             {candidate.cvUrl ? (
-              <a
-                href={candidate.cvUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 border border-slate-200"
+              <button
+                onClick={() =>
+                  handleDownloadCV(candidate.cvUrl!, candidate.name)
+                }
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 border border-slate-200 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-base">
                   description
                 </span>
                 Download CV
-              </a>
+              </button>
             ) : (
               <button
                 disabled
@@ -271,6 +294,42 @@ export default function ApplicantDetailPage() {
                 ) : (
                   <p className="text-sm text-slate-500">
                     No work experience details listed.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">
+                Education
+              </h2>
+              <div className="space-y-4">
+                {candidate.educations && candidate.educations.length > 0 ? (
+                  candidate.educations.map((edu, idx) => (
+                    <div
+                      key={edu.id || idx}
+                      className={`${
+                        idx !== candidate.educations.length - 1
+                          ? "border-b border-slate-200 pb-4"
+                          : ""
+                      }`}
+                    >
+                      <div className="font-semibold text-slate-900">
+                        {edu.degree || "N/A"}
+                        {edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
+                      </div>
+                      <div className="text-sm text-slate-700 font-medium">
+                        {edu.institution || "N/A"}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {edu.startDate || "N/A"} - {edu.endDate || "Present"}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    No education details listed.
                   </p>
                 )}
               </div>

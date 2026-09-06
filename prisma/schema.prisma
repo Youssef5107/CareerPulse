@@ -16,8 +16,6 @@ enum Role {
   EMPLOYER
 }
 
-// schema.prisma
-
 model User {
   id            String    @id @default(cuid())
   name          String?   
@@ -35,6 +33,7 @@ model User {
   sessions      Session[]
   jobs          Job[]         @relation("postedJobs")
   applications  Application[]
+  savedJobs     SavedJob[]
 }
 
 model Profile {
@@ -142,8 +141,21 @@ model Job {
   postedAt        DateTime  @default(now())
   postedBy        User      @relation("postedJobs", fields: [postedById], references: [id])
   postedById      String
+  savedBy         SavedJob[]
 
   applications    Application[]
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  savedAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
 }
 
 model Application {

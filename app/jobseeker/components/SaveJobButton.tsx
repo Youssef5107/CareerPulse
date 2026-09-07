@@ -17,13 +17,17 @@ export default function SaveJobButton({
   const router = useRouter();
 
   const handleToggle = async () => {
+    if (!jobId || loading) return;
     setLoading(true);
+
     try {
       const res = await fetch(`/api/jobs/${jobId}/save`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         setIsSaved(data.isSaved);
         router.refresh();
+      } else {
+        console.error("API error response:", res.status);
       }
     } catch (err) {
       console.error("Failed to toggle save", err);
@@ -34,6 +38,7 @@ export default function SaveJobButton({
 
   return (
     <button
+      type="button"
       onClick={handleToggle}
       disabled={loading}
       className={`px-4 py-2.5 rounded-xl border font-semibold text-xs md:text-sm flex items-center justify-center gap-1.5 transition-colors ${

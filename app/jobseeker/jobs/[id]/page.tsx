@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import ApplyButton from "../../components/ApplyButton";
 import SaveJobButton from "../../components/SaveJobButton";
+import JobTracker from "../../components/JobTracker";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,7 @@ interface JobDetailsPageProps {
   }>;
 }
 
-export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
+export default async function JobDetailPage({ params }: JobDetailsPageProps) {
   const { id } = await params;
 
   const session = await auth();
@@ -27,7 +28,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   }
 
   let hasApplied = false;
-
   let isSaved = false;
 
   if (session?.user?.id) {
@@ -35,7 +35,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
       where: {
         jobId_userId: {
           jobId: job.id,
-
           userId: session.user.id,
         },
       },
@@ -47,7 +46,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
       where: {
         userId_jobId: {
           userId: session.user.id,
-
           jobId: job.id,
         },
       },
@@ -58,12 +56,21 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
 
   return (
     <div className="w-full h-full min-h-screen overflow-y-auto bg-[#f8f9ff] text-[#191c20] relative font-sans selection:bg-[#2e3a8c] selection:text-[#9ea9ff]">
+      {/* Invisible client component that updates localStorage on view */}
+      <JobTracker
+        job={{
+          id: job.id,
+          title: job.title,
+          company: job.company,
+          location: job.location,
+        }}
+      />
+
       <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-[#eff4ff] to-[#f8f9ff] z-0 pointer-events-none">
         <div
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: "radial-gradient(#142175 1px, transparent 1px)",
-
             backgroundSize: "24px 24px",
           }}
         />
@@ -152,8 +159,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               {job.category}
             </div>
           </div>
-
-          {/* Action Buttons Row */}
 
           <div className="flex items-center gap-3 mt-4">
             <ApplyButton jobId={job.id} hasApplied={hasApplied} />

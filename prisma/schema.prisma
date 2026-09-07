@@ -144,6 +144,7 @@ model Job {
   savedBy         SavedJob[]
 
   applications    Application[]
+  createdAt   DateTime @default(now())
 }
 
 model SavedJob {

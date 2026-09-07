@@ -1,7 +1,5 @@
-// app/jobseeker/search/page.tsx
 import Link from "next/link";
 import { PrismaClient } from "@/app/generated/prisma";
-import SearchBar from "../components/SearchBar";
 import BookmarkIcon from "../components/BookmarkIcon";
 import { auth } from "@/lib/auth";
 
@@ -19,7 +17,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { query, location, category } = await searchParams;
   const session = await auth();
 
-  // Fetch jobs matching query filters
   const jobs = await prisma.job.findMany({
     where: {
       AND: [
@@ -43,7 +40,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     },
   });
 
-  // Fetch saved job IDs for logged-in user
   let savedJobIds: string[] = [];
   if (session?.user?.id) {
     const saved = await prisma.savedJob.findMany({
@@ -91,28 +87,32 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               const isSaved = savedJobIds.includes(job.id);
 
               return (
-                <div
+                <Link
+                  href={`/jobseeker/jobs/${job.id}`}
                   key={job.id}
-                  className="bg-white rounded-2xl p-5 border border-[#c6c5d3]/30 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-[#142175]/30 transition-all flex flex-col justify-between group relative"
+                  className="w-full bg-white rounded-2xl p-5 border border-[#c6c5d3]/30 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-[#142175]/30 transition-all flex flex-col justify-between group relative"
                 >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-3">
+                  <div className="w-full">
+                    {/* Header Row: Logo + Text expand fully, Bookmark aligned right */}
+                    <div className="flex items-start justify-between gap-3 mb-3 w-full">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-xl bg-[#e7e8ee] text-[#454651] flex items-center justify-center font-bold text-sm shrink-0">
                           {job.company.slice(0, 2).toUpperCase()}
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors leading-snug">
                             {job.title}
                           </h3>
-                          <p className="text-xs text-[#454651] truncate">
+                          <p className="text-xs text-[#454651] truncate mt-0.5">
                             {job.company} • {job.location}
                           </p>
                         </div>
                       </div>
 
                       {/* Bookmark Icon */}
-                      <BookmarkIcon jobId={job.id} initialIsSaved={isSaved} />
+                      <div className="shrink-0">
+                        <BookmarkIcon jobId={job.id} initialIsSaved={isSaved} />
+                      </div>
                     </div>
 
                     <p className="text-xs text-[#454651] line-clamp-2 my-3 leading-relaxed">
@@ -120,35 +120,32 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </p>
 
                     <div className="flex flex-wrap gap-1.5 my-3">
-                      <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
+                      <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
                         {job.type}
                       </span>
-                      <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
+                      <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
                         {job.category}
                       </span>
                       {job.salary && (
-                        <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2 py-0.5 rounded-md">
+                        <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
                           {job.salary}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[#c6c5d3]/20 flex items-center justify-between mt-2">
+                  <div className="pt-3 border-t border-[#c6c5d3]/20 flex items-center justify-between mt-2 w-full">
                     <span className="text-[11px] text-[#767682]">
                       Posted {new Date(job.createdAt).toLocaleDateString()}
                     </span>
-                    <Link
-                      href={`/jobseeker/jobs/${job.id}`}
-                      className="text-xs font-semibold text-[#142175] hover:underline flex items-center gap-0.5"
-                    >
+                    <span className="text-xs font-semibold text-[#142175] group-hover:underline flex items-center gap-0.5">
                       View Details
                       <span className="material-symbols-outlined text-[14px]">
                         chevron_right
                       </span>
-                    </Link>
+                    </span>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

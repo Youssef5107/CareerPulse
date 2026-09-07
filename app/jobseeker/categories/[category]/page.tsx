@@ -1,5 +1,8 @@
+// app/jobseeker/categories/[category]/page.tsx
 import { PrismaClient } from "@/app/generated/prisma";
 import Link from "next/link";
+import { auth } from "@/lib/auth";
+import BookmarkIcon from "../../components/BookmarkIcon";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +15,7 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category: rawCategory } = await params;
   const categoryName = decodeURIComponent(rawCategory);
+  const session = await auth();
 
   const jobs = await prisma.job.findMany({
     where: {
@@ -24,6 +28,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       postedAt: "desc",
     },
   });
+
+  let savedJobIds = new Set<string>();
+  if (session?.user?.id) {
+    const savedJobs = await prisma.savedJob.findMany({
+      where: { userId: session.user.id },
+      select: { jobId: true },
+    });
+    savedJobIds = new Set(savedJobs.map((s) => s.jobId));
+  }
 
   const title = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
 
@@ -50,7 +63,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </p>
       </div>
 
-      {/* Responsive Grid */}
+      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {jobs.map((job) => (
           <Link
@@ -73,13 +86,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     </p>
                   </div>
                 </div>
-                {/* Bookmark Button */}
-                <button
-                  type="button"
-                  className="text-slate-400 hover:text-slate-600 shrink-0 z-10 p-1"
-                >
-                  <span className="material-symbols-outlined">bookmark</span>
-                </button>
+
+                {/* Interactive Bookmark Button */}
+                <BookmarkIcon
+                  jobId={job.id}
+                  initialIsSaved={savedJobIds.has(job.id)}
+                />
               </div>
             </div>
 
@@ -92,7 +104,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md">
                 {job.type}
               </span>
-              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md">
+              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md capitalize">
                 {job.category}
               </span>
             </div>

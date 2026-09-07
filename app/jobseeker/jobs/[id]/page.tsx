@@ -1,10 +1,9 @@
-// app/jobseeker/jobs/[id]/page.tsx
-import Image from "next/image";
 import Link from "next/link";
 import { PrismaClient } from "@/app/generated/prisma";
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth"; // Adjust to your auth setup
+import { auth } from "@/lib/auth";
 import ApplyButton from "../../components/ApplyButton";
+import SaveJobButton from "../../components/SaveJobButton";
 
 const prisma = new PrismaClient();
 
@@ -16,6 +15,7 @@ interface JobDetailsPageProps {
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params;
+
   const session = await auth();
 
   const job = await prisma.job.findUnique({
@@ -26,35 +26,50 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
     notFound();
   }
 
-  // Check if current user has already applied
   let hasApplied = false;
+
+  let isSaved = false;
+
   if (session?.user?.id) {
     const existingApp = await prisma.application.findUnique({
       where: {
         jobId_userId: {
           jobId: job.id,
+
           userId: session.user.id,
         },
       },
     });
+
     hasApplied = !!existingApp;
+
+    const savedRecord = await prisma.savedJob.findUnique({
+      where: {
+        userId_jobId: {
+          userId: session.user.id,
+
+          jobId: job.id,
+        },
+      },
+    });
+
+    isSaved = !!savedRecord;
   }
 
   return (
     <div className="w-full h-full min-h-screen overflow-y-auto bg-[#f8f9ff] text-[#191c20] relative font-sans selection:bg-[#2e3a8c] selection:text-[#9ea9ff]">
-      {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-[#eff4ff] to-[#f8f9ff] z-0 pointer-events-none">
         <div
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: "radial-gradient(#142175 1px, transparent 1px)",
+
             backgroundSize: "24px 24px",
           }}
         />
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 md:px-12 pt-20 md:pt-24 pb-12 relative z-10">
-        {/* Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-[#454651] text-xs font-semibold mb-4 md:mb-6">
           <Link
             href="/jobseeker/home"
@@ -62,24 +77,27 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
           >
             Jobs
           </Link>
+
           <span className="material-symbols-outlined text-[14px]">
             chevron_right
           </span>
+
           <Link
             href={`/jobseeker/categories/${encodeURIComponent(job.category.toLowerCase())}`}
             className="hover:text-[#142175] transition-colors capitalize"
           >
             {job.category}
           </Link>
+
           <span className="material-symbols-outlined text-[14px]">
             chevron_right
           </span>
+
           <span className="text-[#191c20] truncate max-w-[150px] sm:max-w-none">
             {job.title}
           </span>
         </nav>
 
-        {/* Hero Job Header */}
         <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30 mb-6">
           <div className="flex items-start gap-3.5 md:gap-5 mb-4">
             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-[#e7e8ee] border border-[#c6c5d3]/20 shrink-0 flex items-center justify-center font-bold text-base md:text-lg text-[#454651]">
@@ -91,11 +109,13 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 <h1 className="text-xl md:text-3xl font-bold text-[#191c20] tracking-tight leading-snug">
                   {job.title}
                 </h1>
+
                 <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#142175] inline-block" />{" "}
                   Active
                 </span>
               </div>
+
               <p className="text-xs md:text-sm text-[#454651] mt-1">
                 <span className="font-semibold text-[#191c20]">
                   {job.company}
@@ -105,41 +125,49 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             </div>
           </div>
 
-          {/* Badges Row */}
           <div className="flex flex-wrap gap-2 py-3 border-t border-b border-[#c6c5d3]/20 my-4">
             {job.salary && (
               <div className="flex items-center gap-1 text-[#454651] text-xs font-medium bg-[#f8f9ff] px-2.5 py-1 rounded-md border border-[#c6c5d3]/30">
                 <span className="material-symbols-outlined text-[16px]">
                   payments
                 </span>
+
                 {job.salary}
               </div>
             )}
+
             <div className="flex items-center gap-1 text-[#454651] text-xs font-medium bg-[#f8f9ff] px-2.5 py-1 rounded-md border border-[#c6c5d3]/30">
               <span className="material-symbols-outlined text-[16px]">
                 work
               </span>
+
               {job.type}
             </div>
+
             <div className="flex items-center gap-1 text-[#454651] text-xs font-medium bg-[#f8f9ff] px-2.5 py-1 rounded-md border border-[#c6c5d3]/30 capitalize">
               <span className="material-symbols-outlined text-[16px]">
                 category
               </span>
+
               {job.category}
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <ApplyButton jobId={job.id} hasApplied={hasApplied} />
+          {/* Action Buttons Row */}
+
+          <div className="flex items-center gap-3 mt-4">
+            <ApplyButton jobId={job.id} hasApplied={hasApplied} />
+            <SaveJobButton jobId={job.id} initialIsSaved={isSaved} />
+          </div>
         </div>
 
-        {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
               <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
                 About the Role
               </h2>
+
               <p className="text-sm md:text-base leading-relaxed text-[#454651] whitespace-pre-line">
                 {job.description}
               </p>
@@ -150,12 +178,14 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
                   Requirements
                 </h2>
+
                 <ul className="text-sm md:text-base text-[#454651] space-y-2.5">
                   {job.requirements.map((req, index) => (
                     <li key={index} className="flex items-start gap-2.5">
                       <span className="material-symbols-outlined text-[#142175] mt-0.5 text-base shrink-0">
                         check_circle
                       </span>
+
                       <span>{req}</span>
                     </li>
                   ))}
@@ -168,6 +198,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 <h2 className="text-lg md:text-xl font-bold text-[#191c20] mb-3">
                   Benefits
                 </h2>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {job.benefits.map((benefit, index) => (
                     <div
@@ -179,6 +210,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                           verified
                         </span>
                       </div>
+
                       <span className="text-xs md:text-sm font-semibold text-[#191c20]">
                         {benefit}
                       </span>
@@ -194,17 +226,21 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               <h3 className="text-[11px] font-semibold text-[#454651] mb-3 uppercase tracking-wider">
                 Posted By
               </h3>
+
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#e1e2e8] flex items-center justify-center text-xs font-bold text-[#454651] shrink-0">
                   {job.company.slice(0, 2).toUpperCase()}
                 </div>
+
                 <div>
                   <h4 className="text-xs md:text-sm font-semibold text-[#191c20]">
                     {job.company} Team
                   </h4>
+
                   <p className="text-[11px] text-[#454651]">Recruiting Team</p>
                 </div>
               </div>
+
               <button className="w-full bg-[#f8f9ff] text-[#142175] border border-[#767682]/40 text-xs md:text-sm font-semibold h-10 rounded-xl hover:bg-[#eff4ff] transition-colors duration-200">
                 Message
               </button>
@@ -214,10 +250,12 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               <h3 className="text-[11px] font-semibold text-[#454651] mb-2 uppercase tracking-wider">
                 About {job.company}
               </h3>
+
               <p className="text-xs md:text-sm text-[#454651] mb-3 leading-relaxed">
                 {job.company} designs modern software systems focused on
                 building impactful digital user experiences.
               </p>
+
               <Link
                 href="#"
                 className="text-[#142175] text-xs md:text-sm font-semibold flex items-center gap-1 hover:underline"

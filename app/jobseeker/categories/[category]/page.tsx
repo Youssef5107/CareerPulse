@@ -65,51 +65,69 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {jobs.map((job) => (
-          <Link
-            key={job.id}
-            href={`/jobseeker/jobs/${job.id}`}
-            className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
-          >
-            <div>
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="flex gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
-                    {job.company.slice(0, 2).toUpperCase()}
+        {jobs.map((job) => {
+          const isClosed =
+            job.isExpired ||
+            (job as unknown as { status?: string }).status === "CLOSED";
+          const isSaved = savedJobIds.has(job.id);
+
+          return (
+            <Link
+              href={`/jobseeker/jobs/${job.id}`}
+              key={job.id}
+              className="w-full bg-white rounded-2xl p-5 border border-[#c6c5d3]/30 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-[#142175]/30 transition-all flex flex-col justify-between group relative"
+            >
+              <div className="w-full">
+                {/* Header Row */}
+                <div className="flex items-start justify-between gap-3 mb-3 w-full">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-[#e7e8ee] text-[#454651] flex items-center justify-center font-bold text-sm shrink-0">
+                      {job.company.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors leading-snug">
+                          {job.title}
+                        </h3>
+
+                        {/* Closed Badge */}
+                        {isClosed && (
+                          <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" />
+                            Closed
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-[#454651] truncate mt-0.5">
+                        {job.company} • {job.location}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-blue-600 transition-colors">
-                      {job.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {job.company} • {job.location}
-                    </p>
+
+                  <div className="shrink-0">
+                    <BookmarkIcon jobId={job.id} initialIsSaved={isSaved} />
                   </div>
                 </div>
 
-                {/* Interactive Bookmark Button */}
-                <BookmarkIcon
-                  jobId={job.id}
-                  initialIsSaved={savedJobIds.has(job.id)}
-                />
+                {/* Tags Row */}
+                <div className="flex flex-wrap gap-1.5 my-3">
+                  {job.salary && (
+                    <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+                      {job.salary}
+                    </span>
+                  )}
+                  <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
+                    {job.type}
+                  </span>
+                  <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
+                    {job.category}
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <div className="flex gap-2 pt-3 flex-wrap border-t border-slate-100 mt-4">
-              {job.salary && (
-                <span className="bg-blue-50 text-blue-600 text-[11px] font-semibold px-2.5 py-1 rounded-md">
-                  {job.salary}
-                </span>
-              )}
-              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md">
-                {job.type}
-              </span>
-              <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md capitalize">
-                {job.category}
-              </span>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}{" "}
       </div>
     </div>
   );

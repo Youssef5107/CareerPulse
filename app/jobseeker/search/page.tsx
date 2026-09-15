@@ -85,6 +85,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {jobs.map((job) => {
               const isSaved = savedJobIds.includes(job.id);
+              const isClosed =
+                (job as unknown as { status?: string }).status === "CLOSED" ||
+                (job as unknown as { isExpired?: boolean }).isExpired === true;
 
               return (
                 <Link
@@ -100,9 +103,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                           {job.company.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors leading-snug">
-                            {job.title}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors leading-snug">
+                              {job.title}
+                            </h3>
+
+                            {/* Closed Status Badge */}
+                            {isClosed && (
+                              <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" />
+                                Closed
+                              </span>
+                            )}
+                          </div>
+
                           <p className="text-xs text-[#454651] truncate mt-0.5">
                             {job.company} • {job.location}
                           </p>

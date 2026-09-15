@@ -27,6 +27,10 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
     notFound();
   }
 
+  const isClosed =
+    (job as unknown as { status?: string }).status === "CLOSED" ||
+    (job as unknown as { isExpired?: boolean }).isExpired === true;
+
   let hasApplied = false;
   let isSaved = false;
 
@@ -117,9 +121,20 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
                   {job.title}
                 </h1>
 
-                <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#142175] inline-block" />{" "}
-                  Active
+                {/* Dynamic Status Badge */}
+                <span
+                  className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md inline-flex items-center gap-1 shrink-0 ${
+                    isClosed
+                      ? "bg-rose-50 text-rose-700 border border-rose-200"
+                      : "bg-[#eff4ff] text-[#142175]"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full inline-block ${
+                      isClosed ? "bg-rose-600" : "bg-[#142175]"
+                    }`}
+                  />
+                  {isClosed ? "Closed" : "Active"}
                 </span>
               </div>
 
@@ -138,7 +153,6 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
                 <span className="material-symbols-outlined text-[16px]">
                   payments
                 </span>
-
                 {job.salary}
               </div>
             )}
@@ -147,7 +161,6 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
               <span className="material-symbols-outlined text-[16px]">
                 work
               </span>
-
               {job.type}
             </div>
 
@@ -155,13 +168,25 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
               <span className="material-symbols-outlined text-[16px]">
                 category
               </span>
-
               {job.category}
             </div>
           </div>
 
+          {/* Dynamic Application Controls */}
           <div className="flex items-center gap-3 mt-4">
-            <ApplyButton jobId={job.id} hasApplied={hasApplied} />
+            {isClosed ? (
+              <button
+                disabled
+                className="px-5 h-10 rounded-xl bg-slate-100 text-slate-400 font-semibold text-xs border border-slate-200 cursor-not-allowed flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-base">
+                  block
+                </span>
+                No Longer Accepting Applications
+              </button>
+            ) : (
+              <ApplyButton jobId={job.id} hasApplied={hasApplied} />
+            )}
             <SaveJobButton jobId={job.id} initialIsSaved={isSaved} />
           </div>
         </div>

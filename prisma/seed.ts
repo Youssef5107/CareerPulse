@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 const categories = [
   {
     name: "Design",
-    targetCount: 42,
+    targetCount: 5,
     titles: [
       "Senior UX Designer",
       "UI/UX Visual Designer",
@@ -27,7 +27,7 @@ const categories = [
   },
   {
     name: "Engineering",
-    targetCount: 63,
+    targetCount: 6,
     titles: [
       "Full-Stack Web Developer",
       "Senior Frontend React Engineer",
@@ -49,7 +49,7 @@ const categories = [
   },
   {
     name: "Marketing",
-    targetCount: 27,
+    targetCount: 4,
     titles: [
       "Growth Marketing Manager",
       "SEO & Content Strategist",
@@ -70,7 +70,7 @@ const categories = [
   },
   {
     name: "Data",
-    targetCount: 35,
+    targetCount: 5,
     titles: [
       "Data Analyst",
       "Senior Data Engineer",
@@ -91,7 +91,7 @@ const categories = [
   },
   {
     name: "Sales",
-    targetCount: 30,
+    targetCount: 4,
     titles: [
       "Enterprise Account Executive",
       "Business Development Representative",
@@ -110,7 +110,7 @@ const categories = [
   },
   {
     name: "Product",
-    targetCount: 18,
+    targetCount: 3,
     titles: [
       "Senior Product Manager",
       "Technical Product Manager",
@@ -171,7 +171,6 @@ const globalBenefitsPool = [
   "Stock Options / Equity Grant Options",
 ];
 
-// Utility function to pick 'count' random unique items from an array
 function getRandomItems<T>(array: T[], count: number): T[] {
   const shuffled = [...array].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
@@ -181,7 +180,7 @@ async function main() {
   console.log("Cleaning old jobs...");
   await prisma.job.deleteMany({});
 
-  console.log("Seeding database with randomized requirements and benefits...");
+  console.log("Seeding database with lower count closed jobs...");
 
   const employer = await prisma.user.upsert({
     where: { email: "employer@seed.com" },
@@ -203,16 +202,14 @@ async function main() {
       const type = jobTypes[Math.floor(Math.random() * jobTypes.length)];
       const salary = salaries[Math.floor(Math.random() * salaries.length)];
 
-      // Pick 3 to 5 random requirements specifically for this job
       const reqCount = 3 + Math.floor(Math.random() * 3);
       const requirements = getRandomItems(cat.requirementsPool, reqCount);
 
-      // Pick 3 to 5 random benefits specifically for this job
       const benefitCount = 3 + Math.floor(Math.random() * 3);
       const benefits = getRandomItems(globalBenefitsPool, benefitCount);
 
       jobsToCreate.push({
-        title: `${title} ${i >= cat.titles.length ? `#${i + 1}` : ""}`.trim(),
+        title,
         company,
         location,
         type,
@@ -222,6 +219,7 @@ async function main() {
         requirements,
         benefits,
         isExpired: true,
+        status: "CLOSED" as const,
         postedById: employer.id,
       });
     }
@@ -231,7 +229,7 @@ async function main() {
     data: jobsToCreate,
   });
 
-  console.log(`Successfully seeded ${jobsToCreate.length} expired jobs:`);
+  console.log(`Successfully seeded ${jobsToCreate.length} closed jobs:`);
   categories.forEach((c) => console.log(` - ${c.name}: ${c.targetCount} jobs`));
 }
 

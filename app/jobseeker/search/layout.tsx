@@ -7,7 +7,6 @@ export default function JobseekerLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#f8f9ff]">
-      {/* Top Header / Nav Bar here */}
       <div className="px-4 md:px-12 pt-4">
         <SearchBar />
       </div>

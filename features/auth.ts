@@ -35,17 +35,28 @@ export const signup = async (
 ): Promise<AuthActionState> => {
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
-  const headline = formData.get("headline") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const role = formData.get("role") as string;
 
-  if (!firstName || !lastName || !headline || !email || !password || !role) {
-    return { error: "Please fill in all fields." };
+  // Role-specific fields
+  const headline = formData.get("headline") as string;
+  const companyName = formData.get("companyName") as string;
+
+  if (!firstName || !lastName || !email || !password || !role) {
+    return { error: "Please fill in all required fields." };
+  }
+
+  if (role === "JOB_SEEKER" && !headline) {
+    return { error: "Please provide your job title or headline." };
+  }
+
+  if (role === "EMPLOYER" && !companyName) {
+    return { error: "Please provide your company name." };
   }
 
   if (role !== "JOB_SEEKER" && role !== "EMPLOYER") {
-    return { error: "Invalid role." };
+    return { error: "Invalid role selection." };
   }
 
   if (password.length < 8) {
@@ -59,38 +70,39 @@ export const signup = async (
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Create User along with Profile including the headline
   await prisma.user.create({
     data: {
       firstName,
       lastName,
       name: `${firstName} ${lastName}`,
+      companyName: role === "EMPLOYER" ? companyName : null,
       email,
       password: hashedPassword,
       role: role as "JOB_SEEKER" | "EMPLOYER",
-      profile: {
-        create: {
-          headline,
-        },
-      },
+      // Only attach jobseeker profile headline if role is JOB_SEEKER
+      ...(role === "JOB_SEEKER" && headline
+        ? {
+            profile: {
+              create: {
+                headline,
+              },
+            },
+          }
+        : {}),
     },
   });
 
   try {
-    // Authenticate session in background without instant redirect
     await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
-
-    // Return success to trigger the frontend success modal popup
     return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: "Account created — please sign in manually." };
     }
-    // If NextAuth throws internal redirect structure, return success
     return { success: true };
   }
 };

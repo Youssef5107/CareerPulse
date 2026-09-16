@@ -3,12 +3,12 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { signup } from "@/features/auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SignUpPage() {
   const [role, setRole] = useState<"job-seeker" | "employer">("job-seeker");
   const [state, formAction, isPending] = useActionState(signup, undefined);
 
-  // Deriving modal visibility directly from the form state
   const isSuccess = Boolean(state?.success);
 
   return (
@@ -25,7 +25,9 @@ export default function SignUpPage() {
               Create an account
             </h1>
             <p className="text-sm text-on-surface-variant">
-              Join CareerPulse to unlock your potential.
+              {role === "job-seeker"
+                ? "Join CareerPulse to unlock your potential."
+                : "Hire top talent and scale your business with CareerPulse."}
             </p>
           </div>
 
@@ -61,166 +63,203 @@ export default function SignUpPage() {
             </button>
           </div>
 
-          {/* Form */}
-          <form action={formAction} className="space-y-4">
-            <input
-              type="hidden"
-              name="role"
-              value={role === "job-seeker" ? "JOB_SEEKER" : "EMPLOYER"}
-            />
-
-            {/* First and Last Name Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  className="block text-xs font-semibold text-on-surface-variant mb-1"
-                  htmlFor="firstName"
-                >
-                  First Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-outline text-[18px]">
-                      person
-                    </span>
-                  </div>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    placeholder="Jane"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  className="block text-xs font-semibold text-on-surface-variant mb-1"
-                  htmlFor="lastName"
-                >
-                  Last Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-outline text-[18px]">
-                      person
-                    </span>
-                  </div>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    required
-                    placeholder="Doe"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Job Title / Headline Field */}
-            <div>
-              <label
-                className="block text-xs font-semibold text-on-surface-variant mb-1"
-                htmlFor="headline"
-              >
-                Job Title / Headline
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline text-[18px]">
-                    work
-                  </span>
-                </div>
-                <input
-                  id="headline"
-                  name="headline"
-                  type="text"
-                  required
-                  placeholder="e.g. Senior Software Engineer"
-                  className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                />
-              </div>
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label
-                className="block text-xs font-semibold text-on-surface-variant mb-1"
-                htmlFor="email"
-              >
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline text-[18px]">
-                    mail
-                  </span>
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="jane@example.com"
-                  className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label
-                className="block text-xs font-semibold text-on-surface-variant mb-1"
-                htmlFor="password"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline text-[18px]">
-                    lock
-                  </span>
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  placeholder="••••••••"
-                  className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                />
-              </div>
-              <p className="mt-1 text-[11px] text-on-surface-variant">
-                Must be at least 8 characters long.
-              </p>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full h-[48px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:translate-y-0 mt-2"
+          {/* Animated Form Switcher */}
+          <AnimatePresence mode="wait">
+            <motion.form
+              key={role}
+              action={formAction}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
             >
-              <span>
-                {isPending ? "Creating account..." : "Create Account"}
-              </span>
-              <span className="material-symbols-outlined text-[20px]">
-                arrow_forward
-              </span>
-            </button>
-          </form>
+              <input
+                type="hidden"
+                name="role"
+                value={role === "job-seeker" ? "JOB_SEEKER" : "EMPLOYER"}
+              />
+
+              {/* First and Last Name Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    className="block text-xs font-semibold text-on-surface-variant mb-1"
+                    htmlFor="firstName"
+                  >
+                    First Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-outline text-[18px]">
+                        person
+                      </span>
+                    </div>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      required
+                      placeholder="Jane"
+                      className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    className="block text-xs font-semibold text-on-surface-variant mb-1"
+                    htmlFor="lastName"
+                  >
+                    Last Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-outline text-[18px]">
+                        person
+                      </span>
+                    </div>
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      required
+                      placeholder="Doe"
+                      className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Field: Job Title vs Company Name */}
+              {role === "job-seeker" ? (
+                <div>
+                  <label
+                    className="block text-xs font-semibold text-on-surface-variant mb-1"
+                    htmlFor="headline"
+                  >
+                    Job Title / Headline
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-outline text-[18px]">
+                        work
+                      </span>
+                    </div>
+                    <input
+                      id="headline"
+                      name="headline"
+                      type="text"
+                      required
+                      placeholder="e.g. Senior Software Engineer"
+                      className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label
+                    className="block text-xs font-semibold text-on-surface-variant mb-1"
+                    htmlFor="companyName"
+                  >
+                    Company Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-outline text-[18px]">
+                        domain
+                      </span>
+                    </div>
+                    <input
+                      id="companyName"
+                      name="companyName"
+                      type="text"
+                      required
+                      placeholder="e.g. Acme Corporation"
+                      className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Email Field */}
+              <div>
+                <label
+                  className="block text-xs font-semibold text-on-surface-variant mb-1"
+                  htmlFor="email"
+                >
+                  {role === "employer" ? "Work Email Address" : "Email Address"}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-outline text-[18px]">
+                      mail
+                    </span>
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder={
+                      role === "employer"
+                        ? "jane@company.com"
+                        : "jane@example.com"
+                    }
+                    className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label
+                  className="block text-xs font-semibold text-on-surface-variant mb-1"
+                  htmlFor="password"
+                >
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-outline text-[18px]">
+                      lock
+                    </span>
+                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    minLength={8}
+                    placeholder="••••••••"
+                    className="block w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder-outline focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-on-surface-variant">
+                  Must be at least 8 characters long.
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full h-[48px] bg-primary hover:bg-primary-container text-on-primary font-medium text-sm rounded-xl shadow-md transform hover:-translate-y-[2px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:translate-y-0 mt-2"
+              >
+                <span>
+                  {isPending ? "Creating account..." : "Create Account"}
+                </span>
+                <span className="material-symbols-outlined text-[20px]">
+                  arrow_forward
+                </span>
+              </button>
+            </motion.form>
+          </AnimatePresence>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-on-surface-variant">
               By signing up, you agree to our{" "}
               <Link
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: "auto" });
-                }}
                 href="/terms"
                 className="text-primary hover:underline font-medium"
               >
@@ -228,9 +267,6 @@ export default function SignUpPage() {
               </Link>{" "}
               and{" "}
               <Link
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: "auto" });
-                }}
                 href="/privacy"
                 className="text-primary hover:underline font-medium"
               >
@@ -244,9 +280,6 @@ export default function SignUpPage() {
             <p className="text-xs text-on-surface-variant">
               Already have an account?{" "}
               <Link
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: "auto" });
-                }}
                 href="/auth/signin"
                 className="text-primary hover:underline font-medium"
               >
@@ -272,8 +305,9 @@ export default function SignUpPage() {
             </h3>
 
             <p className="text-sm text-on-surface-variant">
-              Welcome to CareerPulse. Complete your profile details now to
-              optimize your job searches and visibility to employers.
+              {role === "employer"
+                ? "Welcome to CareerPulse. Start posting jobs and finding qualified candidates right away."
+                : "Welcome to CareerPulse. Complete your profile details now to optimize your job searches."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -284,10 +318,14 @@ export default function SignUpPage() {
                 Close
               </Link>
               <Link
-                href="/jobseeker/profile"
+                href={
+                  role === "employer"
+                    ? "/employer/dashboard"
+                    : "/jobseeker/profile"
+                }
                 className="flex-1 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-medium hover:bg-primary-container transition-colors flex items-center justify-center"
               >
-                Continue Profile
+                {role === "employer" ? "Go to Dashboard" : "Continue Profile"}
               </Link>
             </div>
           </div>

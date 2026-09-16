@@ -42,7 +42,7 @@ export default function PostJobReviewPage() {
         locationType: jobData.locationType.toUpperCase(), // "HYBRID"
       };
 
-      const response = await fetch("/api/jobs", {
+      const response = await fetch("/api/employer/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

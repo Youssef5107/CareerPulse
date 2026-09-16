@@ -39,6 +39,15 @@ export async function POST(req: Request) {
       },
     });
 
+    if (!body.title || !body.company || !body.location || !body.category) {
+      return NextResponse.json(
+        {
+          error: "Missing required fields (title, company, location, category)",
+        },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(newJob, { status: 201 });
   } catch (error) {
     console.error("Error creating job:", error);

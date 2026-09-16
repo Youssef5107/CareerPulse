@@ -31,7 +31,7 @@ const initialState: PostingsState = {
 export const fetchPostings = createAsyncThunk(
   "postings/fetchPostings",
   async () => {
-    const response = await fetch("/api/posts");
+    const response = await fetch("/api/employer/posts");
     if (!response.ok) throw new Error("Failed to fetch posts");
     return (await response.json()) as Posting[];
   },
@@ -47,7 +47,7 @@ export const updatePostingStatus = createAsyncThunk(
     jobId: string;
     status: "ACTIVE" | "DRAFT" | "CLOSED";
   }) => {
-    const response = await fetch(`/api/posts/${jobId}`, {
+    const response = await fetch(`/api/employer/posts/${jobId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

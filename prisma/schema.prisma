@@ -27,6 +27,7 @@ model User {
   password      String?
 
   role          Role?
+  companyName   String?
 
   profile       Profile?
   accounts      Account[]

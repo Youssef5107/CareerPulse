@@ -177,6 +177,7 @@ model Application {
 enum NotificationType {
   NEW_JOB_MATCH
   PROFILE_VIEW
+  NEW_APPLICANT
   APPLICATION_ACCEPTED
   APPLICATION_REJECTED
 }

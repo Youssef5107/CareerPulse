@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 interface Experience {
   id: string;
@@ -54,6 +56,7 @@ export default function ApplicantDetailPage() {
   const [data, setData] = useState<ApplicantDetailData | null>(null);
   const [status, setStatus] = useState<string>("PENDING");
   const [loading, setLoading] = useState<boolean>(true);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!applicationId) return;
@@ -62,8 +65,7 @@ export default function ApplicantDetailPage() {
       try {
         const res = await fetch(`/api/applications/${applicationId}`);
         if (!res.ok) {
-          setLoading(false);
-          return;
+          throw new Error("Failed to load applicant details.");
         }
         const result: ApplicantDetailData = await res.json();
         setData(result);
@@ -80,24 +82,46 @@ export default function ApplicantDetailPage() {
               type: "PROFILE_VIEW",
               link: `/jobseeker/applications`,
             }),
-          }).catch((err) =>
-            console.error("Failed to send view notification", err),
-          );
+          }).catch((err) => {
+            console.error("Failed to send view notification", err);
+            const errorMessage =
+              err instanceof Error
+                ? err.message
+                : "Failed to send profile view notification.";
+
+            dispatch(
+              showToast({
+                message: errorMessage,
+                variant: "error",
+              }),
+            );
+          });
         }
       } catch (err) {
         console.error("Failed to load applicant details", err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Failed to load applicant details.";
+
+        dispatch(
+          showToast({
+            message: errorMessage,
+            variant: "error",
+          }),
+        );
       } finally {
         setLoading(false);
       }
     }
 
     fetchApplicant();
-  }, [applicationId]);
+  }, [applicationId, dispatch]);
 
   const handleUpdateStatus = async (newStatus: string) => {
     setStatus(newStatus);
     try {
-      await fetch(`/api/applications/${applicationId}`, {
+      const res = await fetch(`/api/applications/${applicationId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -121,8 +145,36 @@ export default function ApplicantDetailPage() {
             : null,
         }),
       });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(
+          errorData?.error ||
+            errorData?.message ||
+            "Failed to update application status.",
+        );
+      }
+
+      dispatch(
+        showToast({
+          message: `Application ${newStatus.toLowerCase()} successfully.`,
+          variant: "success",
+        }),
+      );
     } catch (err) {
       console.error("Failed to update status", err);
+      setStatus(data?.status || "PENDING");
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to update application status.";
+
+      dispatch(
+        showToast({
+          message: errorMessage,
+          variant: "error",
+        }),
+      );
     }
   };
 

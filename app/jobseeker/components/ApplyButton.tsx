@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 interface ApplyButtonProps {
   jobId: string;
@@ -15,6 +17,7 @@ export default function ApplyButton({
   const [hasApplied, setHasApplied] = useState(initialHasApplied);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const handleApply = async () => {
     if (hasApplied || loading) return;
@@ -33,16 +36,37 @@ export default function ApplyButton({
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Failed to submit application");
+        dispatch(
+          showToast({
+            message: data.error || "Failed to submit application",
+            variant: "error",
+          }),
+        );
         setLoading(false);
         return;
       }
 
       setHasApplied(true);
+      dispatch(
+        showToast({
+          message: "Your application was submitted successfully.",
+          variant: "success",
+        }),
+      );
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("An unexpected error occurred.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      dispatch(
+        showToast({
+          message: errorMessage,
+          variant: "error",
+        }),
+      );
     } finally {
       setLoading(false);
     }

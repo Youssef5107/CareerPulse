@@ -20,7 +20,7 @@ export default function Toast() {
     }
   }, [isVisible, dispatch]);
 
-  if (!isVisible || !message) return null;
+  if (!message) return null;
 
   const variantStyles = {
     error: "bg-rose-50/95 border-rose-200 text-rose-800",
@@ -35,7 +35,11 @@ export default function Toast() {
   };
 
   return (
-    <div className="fixed bottom-6 left-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+    <div
+      className={`fixed right-6 bottom-6 z-100 toast-notification ${
+        isVisible ? "toast-notification-enter" : "toast-notification-exit"
+      }`}
+    >
       <div
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-2xl transition-all max-w-md ${variantStyles[variant]}`}
       >

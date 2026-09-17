@@ -33,10 +33,8 @@ export default function RootLayout({
       </head>
       <body>
         <ReduxProvider>
-          <PageTransition>
-            {children}
-            <Toast />
-          </PageTransition>
+          <PageTransition>{children}</PageTransition>
+          <Toast />
         </ReduxProvider>
       </body>
     </html>

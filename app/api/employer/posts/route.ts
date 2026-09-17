@@ -14,23 +14,43 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    let formattedSalary = "Not specified";
-    if (body.salaryMin || body.salaryMax) {
-      formattedSalary = `$${body.salaryMin || "0"} - $${body.salaryMax || "0"}`;
+    // 1. Validate required fields BEFORE touching the database
+    const company = body.companyName || body.company;
+    const title = body.title?.trim();
+    const location = body.location?.trim();
+    const category = body.department?.trim() || body.category?.trim();
+
+    if (!title || !company || !location || !category) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing required fields: title, company, location, or department.",
+        },
+        { status: 400 },
+      );
     }
 
+    // 2. Format salary string safely
+    let formattedSalary = "Not specified";
+    if (body.salaryMin || body.salaryMax) {
+      const min = body.salaryMin ? `$${body.salaryMin}` : "$0";
+      const max = body.salaryMax ? `$${body.salaryMax}` : "N/A";
+      formattedSalary = `${min} - ${max}`;
+    }
+
+    // 3. Create the job posting
     const newJob = await prisma.job.create({
       data: {
-        title: body.title,
-        company: body.companyName || "Company",
-        location: body.location,
-        type: body.employmentType,
-        category: body.department,
+        title,
+        company,
+        location,
+        type: body.employmentType || "Full-Time",
+        category,
         locationType: body.locationType || "onsite",
-        description: body.description,
+        description: body.description || "",
         companyOverview: body.companyOverview || null,
         salary: formattedSalary,
-        benefits: body.benefits || [],
+        benefits: Array.isArray(body.benefits) ? body.benefits : [],
         visibility: body.visibility || "PUBLIC",
         expirationDate: body.expirationDate
           ? new Date(body.expirationDate)
@@ -39,43 +59,43 @@ export async function POST(req: Request) {
       },
     });
 
-    if (!body.title || !body.company || !body.location || !body.category) {
-      return NextResponse.json(
-        {
-          error: "Missing required fields (title, company, location, category)",
+    // 4. Non-blocking Notification Dispatch for matching Job Seekers
+    try {
+      const matchingSeekers = await prisma.user.findMany({
+        where: {
+          role: "JOB_SEEKER",
+          profile: {
+            headline: { contains: title, mode: "insensitive" },
+          },
         },
-        { status: 400 },
-      );
-    }
-
-    const matchingSeekers = await prisma.user.findMany({
-      where: {
-        role: "JOB_SEEKER",
-        profile: {
-          headline: { contains: newJob.title, mode: "insensitive" },
-        },
-      },
-      select: { id: true },
-    });
-
-    if (matchingSeekers.length > 0) {
-      await prisma.notification.createMany({
-        data: matchingSeekers.map((seeker) => ({
-          userId: seeker.id,
-          title: "New Job Match!",
-          message: `A new job for "${newJob.title}" was just posted.`,
-          type: "NEW_JOB_MATCH",
-          link: `/jobs/${newJob.id}`,
-        })),
+        select: { id: true },
       });
+
+      if (matchingSeekers.length > 0) {
+        await prisma.notification.createMany({
+          data: matchingSeekers.map((seeker) => ({
+            userId: seeker.id,
+            title: "New Job Match!",
+            message: `A new job for "${newJob.title}" was just posted.`,
+            type: "NEW_JOB_MATCH",
+            link: `/jobs/${newJob.id}`,
+          })),
+        });
+      }
+    } catch (notificationError) {
+      // Prevents notification failure from breaking the job creation response
+      console.error(
+        "Failed to send job match notifications:",
+        notificationError,
+      );
     }
 
     return NextResponse.json(newJob, { status: 201 });
   } catch (error) {
     console.error("Error creating job:", error);
     return NextResponse.json(
-      { message: "Bad request. Failed to create job." },
-      { status: 400 },
+      { message: "Failed to create job posting." },
+      { status: 500 },
     );
   }
 }

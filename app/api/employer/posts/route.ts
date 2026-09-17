@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // 1. Validate required fields BEFORE touching the database
-    const company = body.companyName || body.company;
+    const company = (body.companyName || body.company)?.trim();
     const title = body.title?.trim();
     const location = body.location?.trim();
     const category = body.department?.trim() || body.category?.trim();
@@ -30,7 +30,23 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Format salary string safely
+    // 2. Check for duplicate job posting by the same employer
+    const existingJob = await prisma.job.findFirst({
+      where: {
+        postedById: session.user.id,
+        title: { equals: title, mode: "insensitive" },
+        company: { equals: company, mode: "insensitive" },
+      },
+    });
+
+    if (existingJob) {
+      return NextResponse.json(
+        { error: "You have already posted a job with this title and company." },
+        { status: 409 },
+      );
+    }
+
+    // 3. Format salary string safely
     let formattedSalary = "Not specified";
     if (body.salaryMin || body.salaryMax) {
       const min = body.salaryMin ? `$${body.salaryMin}` : "$0";
@@ -38,7 +54,7 @@ export async function POST(req: Request) {
       formattedSalary = `${min} - ${max}`;
     }
 
-    // 3. Create the job posting
+    // 4. Create the job posting
     const newJob = await prisma.job.create({
       data: {
         title,
@@ -59,7 +75,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. Non-blocking Notification Dispatch for matching Job Seekers
+    // 5. Non-blocking Notification Dispatch for matching Job Seekers
     try {
       const matchingSeekers = await prisma.user.findMany({
         where: {
@@ -83,7 +99,6 @@ export async function POST(req: Request) {
         });
       }
     } catch (notificationError) {
-      // Prevents notification failure from breaking the job creation response
       console.error(
         "Failed to send job match notifications:",
         notificationError,
@@ -95,52 +110,6 @@ export async function POST(req: Request) {
     console.error("Error creating job:", error);
     return NextResponse.json(
       { message: "Failed to create job posting." },
-      { status: 500 },
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { message: "Unauthorized. Please log in." },
-        { status: 401 },
-      );
-    }
-
-    const rawJobs = await prisma.job.findMany({
-      where: { postedById: session.user.id },
-      include: {
-        applications: {
-          select: { id: true, status: true },
-        },
-      },
-      orderBy: { postedAt: "desc" },
-    });
-
-    const postings = rawJobs.map((job) => ({
-      id: job.id,
-      title: job.title,
-      location: job.location,
-      type: job.type,
-      postedDate: `Posted ${new Date(job.postedAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}`,
-      status: (job.status as "ACTIVE" | "DRAFT" | "CLOSED") || "ACTIVE",
-      totalApplicants: job.applications.length,
-      newApplicants: job.applications.filter((app) => app.status === "PENDING")
-        .length,
-    }));
-
-    return NextResponse.json(postings);
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return NextResponse.json(
-      { message: "Internal server error." },
       { status: 500 },
     );
   }

@@ -48,6 +48,28 @@ export async function POST(req: Request) {
       );
     }
 
+    const matchingSeekers = await prisma.user.findMany({
+      where: {
+        role: "JOB_SEEKER",
+        profile: {
+          headline: { contains: newJob.title, mode: "insensitive" },
+        },
+      },
+      select: { id: true },
+    });
+
+    if (matchingSeekers.length > 0) {
+      await prisma.notification.createMany({
+        data: matchingSeekers.map((seeker) => ({
+          userId: seeker.id,
+          title: "New Job Match!",
+          message: `A new job for "${newJob.title}" was just posted.`,
+          type: "NEW_JOB_MATCH",
+          link: `/jobs/${newJob.id}`,
+        })),
+      });
+    }
+
     return NextResponse.json(newJob, { status: 201 });
   } catch (error) {
     console.error("Error creating job:", error);

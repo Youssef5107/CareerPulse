@@ -114,3 +114,49 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { message: "Unauthorized. Please log in." },
+        { status: 401 },
+      );
+    }
+
+    const rawJobs = await prisma.job.findMany({
+      where: { postedById: session.user.id },
+      include: {
+        applications: {
+          select: { id: true, status: true },
+        },
+      },
+      orderBy: { postedAt: "desc" },
+    });
+
+    const postings = rawJobs.map((job) => ({
+      id: job.id,
+      title: job.title,
+      location: job.location,
+      type: job.type,
+      postedDate: `Posted ${new Date(job.postedAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}`,
+      status: (job.status as "ACTIVE" | "DRAFT" | "CLOSED") || "ACTIVE",
+      totalApplicants: job.applications.length,
+      newApplicants: job.applications.filter((app) => app.status === "PENDING")
+        .length,
+    }));
+
+    return NextResponse.json(postings);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return NextResponse.json(
+      { message: "Internal server error." },
+      { status: 500 },
+    );
+  }
+}

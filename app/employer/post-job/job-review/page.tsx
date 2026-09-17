@@ -23,23 +23,19 @@ export default function PostJobReviewPage() {
   const handlePublishJob = async () => {
     setIsSubmitting(true);
     try {
-      // Map values to common Prisma/Backend conventions
       const payload = {
         ...jobData,
-        // Pass null/undefined instead of empty strings for optional fields
-        companyName: jobData.companyName.trim() || undefined,
-        companyOverview: jobData.companyOverview.trim() || undefined,
+        companyName: jobData.companyName?.trim() || "Company",
+        companyOverview: jobData.companyOverview?.trim() || undefined,
         expirationDate: jobData.expirationDate
           ? new Date(jobData.expirationDate)
           : undefined,
 
-        // Numbers
         salaryMin: jobData.salaryMin ? Number(jobData.salaryMin) : undefined,
         salaryMax: jobData.salaryMax ? Number(jobData.salaryMax) : undefined,
 
-        // Format Enums if your API expects uppercase / underscore formats
-        employmentType: jobData.employmentType.toUpperCase().replace("-", "_"), // "FULL_TIME"
-        locationType: jobData.locationType.toUpperCase(), // "HYBRID"
+        employmentType: jobData.employmentType?.toUpperCase().replace("-", "_"),
+        locationType: jobData.locationType?.toUpperCase(),
       };
 
       const response = await fetch("/api/employer/posts", {
@@ -54,7 +50,7 @@ export default function PostJobReviewPage() {
         throw new Error(
           typeof errorData === "string"
             ? errorData
-            : errorData.message || "Failed to publish job",
+            : errorData.error || errorData.message || "Failed to publish job",
         );
       }
 

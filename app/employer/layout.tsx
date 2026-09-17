@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import SideNavBar from "./components/SideNavBar";
+import NotificationBell from "../components/NotificationBell";
 
 export default function EmployerLayout({
   children,
@@ -36,14 +37,7 @@ export default function EmployerLayout({
           </Link>
         </div>
 
-        <button
-          className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer relative"
-          aria-label="Notifications"
-        >
-          <span className="material-symbols-outlined text-2xl">
-            notifications
-          </span>
-        </button>
+        <NotificationBell />
       </header>
 
       {/* Main Container */}

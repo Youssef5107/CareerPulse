@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import SideNavBar from "./components/SideNavBar";
-import NotificationBell from "./components/NotificationBell";
+import NotificationBell from "../components/NotificationBell";
 
 export default function EmployerLayout({
   children,

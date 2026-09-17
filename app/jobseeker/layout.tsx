@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import SideNavBar from "./components/SideNavBar";
-import BellIcon from "./components/BellIcon";
+import NotificationBell from "./components/NotificationBell";
 
 export default function EmployerLayout({
   children,
@@ -37,7 +37,7 @@ export default function EmployerLayout({
           </Link>
         </div>
 
-        <BellIcon></BellIcon>
+        <NotificationBell></NotificationBell>
       </header>
 
       {/* Main Container */}

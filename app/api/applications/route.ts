@@ -43,7 +43,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create the application record
+    // 1. Fetch job to retrieve employer's user ID and job title
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { id: true, title: true, postedById: true },
+    });
+
+    if (!job) {
+      return NextResponse.json(
+        { error: "Job posting not found." },
+        { status: 404 },
+      );
+    }
+
+    // 2. Create the application record
     const application = await prisma.application.create({
       data: {
         jobId,
@@ -51,6 +64,25 @@ export async function POST(req: Request) {
         status: "PENDING",
       },
     });
+
+    try {
+      if (job.postedById) {
+        await prisma.notification.create({
+          data: {
+            userId: job.postedById,
+            title: "New Job Application",
+            message: `A candidate has applied for your job posting "${job.title}".`,
+            type: "NEW_APPLICANT",
+            link: `/employer/applicants/${application.id}`,
+          },
+        });
+      }
+    } catch (notificationError) {
+      console.error(
+        "Failed to send notification to employer:",
+        notificationError,
+      );
+    }
 
     return NextResponse.json({ success: true, application }, { status: 201 });
   } catch (error) {

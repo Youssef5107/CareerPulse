@@ -23,9 +23,9 @@ export default function Toast() {
   if (!isVisible || !message) return null;
 
   const variantStyles = {
-    error: "bg-red-900/90 border-red-500/50 text-red-100",
-    success: "bg-emerald-900/90 border-emerald-500/50 text-emerald-100",
-    info: "bg-slate-900/90 border-slate-700 text-slate-100",
+    error: "bg-rose-50/95 border-rose-200 text-rose-800",
+    success: "bg-emerald-50/95 border-emerald-200 text-emerald-800",
+    info: "bg-sky-50/95 border-sky-200 text-sky-800",
   };
 
   const icons = {
@@ -35,7 +35,7 @@ export default function Toast() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed bottom-6 left-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-2xl transition-all max-w-md ${variantStyles[variant]}`}
       >

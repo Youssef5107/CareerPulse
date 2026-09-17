@@ -9,6 +9,7 @@ import {
   setSearchQuery,
   updatePostingStatus,
 } from "@/store/features/postings/postingsSlice";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 export default function EmployerPostingsPage() {
   const dispatch = useAppDispatch();
@@ -19,15 +20,45 @@ export default function EmployerPostingsPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchPostings());
+    dispatch(fetchPostings())
+      .unwrap()
+      .catch((error: unknown) => {
+        dispatch(
+          showToast({
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to load postings.",
+            variant: "error",
+          }),
+        );
+      });
   }, [dispatch]);
 
-  const handleStatusUpdate = (
+  const handleStatusUpdate = async (
     jobId: string,
     status: "ACTIVE" | "DRAFT" | "CLOSED",
   ) => {
     setOpenMenuId(null);
-    dispatch(updatePostingStatus({ jobId, status }));
+    try {
+      await dispatch(updatePostingStatus({ jobId, status })).unwrap();
+      dispatch(
+        showToast({
+          message: `Posting moved to ${status.toLowerCase()}.`,
+          variant: "success",
+        }),
+      );
+    } catch (error: unknown) {
+      dispatch(
+        showToast({
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to update posting status.",
+          variant: "error",
+        }),
+      );
+    }
   };
 
   const counts = {

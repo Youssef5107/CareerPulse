@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { resetJobPostForm } from "@/store/features/jobPost/jobPostSlice";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 export default function PostJobReviewPage() {
   const router = useRouter();
@@ -54,14 +55,26 @@ export default function PostJobReviewPage() {
         );
       }
 
+      dispatch(
+        showToast({
+          message: "Job posted successfully.",
+          variant: "success",
+        }),
+      );
       dispatch(resetJobPostForm());
       router.push("/employer/jobs");
     } catch (error: unknown) {
       console.error("Error submitting job:", error);
-      alert(
+      const errorMessage =
         error instanceof Error
           ? error.message
-          : "Something went wrong while publishing the job.",
+          : "Something went wrong while publishing the job.";
+
+      dispatch(
+        showToast({
+          message: errorMessage,
+          variant: "error",
+        }),
       );
     } finally {
       setIsSubmitting(false);

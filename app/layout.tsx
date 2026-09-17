@@ -1,5 +1,6 @@
 import { ReduxProvider } from "@/store/provider";
 import PageTransition from "./components/PageTransition";
+import Toast from "./components/Toast";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -32,7 +33,10 @@ export default function RootLayout({
       </head>
       <body>
         <ReduxProvider>
-          <PageTransition>{children}</PageTransition>
+          <PageTransition>
+            {children}
+            <Toast />
+          </PageTransition>
         </ReduxProvider>
       </body>
     </html>

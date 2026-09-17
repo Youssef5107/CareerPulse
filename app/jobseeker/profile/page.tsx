@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useAppDispatch } from "@/store/hooks";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 interface WorkExperience {
   id: string;
@@ -43,6 +45,7 @@ interface UserProfile {
 export default function ProfilePage() {
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
 
   // File Upload References
   const cvInputRef = useRef<HTMLInputElement>(null);
@@ -86,9 +89,23 @@ export default function ProfilePage() {
       if (res.ok) {
         const data = await res.json();
         setUserData(data);
+      } else {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(
+          errorData?.error || errorData?.message || "Failed to load profile.",
+        );
       }
     } catch (error) {
       console.error("Failed to load profile:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load profile.";
+
+      dispatch(
+        showToast({
+          message: errorMessage,
+          variant: "error",
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -112,9 +129,29 @@ export default function ProfilePage() {
         const updated = await res.json();
         setUserData(updated);
         setActiveModal(null);
+        dispatch(
+          showToast({
+            message: "Profile updated successfully.",
+            variant: "success",
+          }),
+        );
+      } else {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(
+          errorData?.error || errorData?.message || "Failed to update profile.",
+        );
       }
     } catch (error) {
       console.error("Error updating profile:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update profile.";
+
+      dispatch(
+        showToast({
+          message: errorMessage,
+          variant: "error",
+        }),
+      );
     }
   };
 
@@ -156,6 +193,12 @@ export default function ProfilePage() {
       if (res.ok) {
         fetchProfile();
         setActiveModal(null);
+        dispatch(
+          showToast({
+            message: `${type === "experience" ? "Experience" : "Education"} added successfully.`,
+            variant: "success",
+          }),
+        );
         if (type === "experience") {
           setExpForm({
             title: "",
@@ -172,9 +215,23 @@ export default function ProfilePage() {
             endDate: "",
           });
         }
+      } else {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(
+          errorData?.error || errorData?.message || `Failed to add ${type}.`,
+        );
       }
     } catch (error) {
       console.error(`Failed to add ${type}:`, error);
+      const errorMessage =
+        error instanceof Error ? error.message : `Failed to add ${type}.`;
+
+      dispatch(
+        showToast({
+          message: errorMessage,
+          variant: "error",
+        }),
+      );
     }
   };
 

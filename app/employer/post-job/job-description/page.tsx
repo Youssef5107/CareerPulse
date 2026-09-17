@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateJobDetails } from "@/store/features/jobPost/jobPostSlice";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 export default function PostJobDescriptionPage() {
   const router = useRouter();
@@ -28,7 +29,12 @@ export default function PostJobDescriptionPage() {
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.description.trim()) {
-      alert("Please fill in the Job Description.");
+      dispatch(
+        showToast({
+          message: "Please fill in the Job Description.",
+          variant: "error",
+        }),
+      );
       return;
     }
     router.push("/employer/post-job/job-review");

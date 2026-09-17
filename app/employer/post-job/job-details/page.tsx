@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateJobDetails } from "@/store/features/jobPost/jobPostSlice";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 export default function PostJobPage() {
   const router = useRouter();
@@ -20,7 +21,12 @@ export default function PostJobPage() {
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.employmentType || !formData.location) {
-      alert("Please complete all required fields (*).");
+      dispatch(
+        showToast({
+          message: "Please complete all required fields (*).",
+          variant: "error",
+        }),
+      );
       return;
     }
     router.push("/employer/post-job/job-description");

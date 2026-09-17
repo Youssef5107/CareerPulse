@@ -1,4 +1,3 @@
-// app/employer/applicants/[applicant-id]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,6 +30,7 @@ interface ApplicantDetailData {
   appliedAt: string;
   jobTitle: string;
   candidate: {
+    id?: string;
     name: string;
     email: string;
     image?: string | null;
@@ -68,6 +68,22 @@ export default function ApplicantDetailPage() {
         const result: ApplicantDetailData = await res.json();
         setData(result);
         setStatus(result.status);
+
+        if (result?.candidate?.id) {
+          fetch("/api/notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: result.candidate.id,
+              title: "Profile Viewed",
+              message: `An employer viewed your application for "${result.jobTitle}".`,
+              type: "PROFILE_VIEW",
+              link: `/jobseeker/applications`,
+            }),
+          }).catch((err) =>
+            console.error("Failed to send view notification", err),
+          );
+        }
       } catch (err) {
         console.error("Failed to load applicant details", err);
       } finally {
@@ -84,7 +100,26 @@ export default function ApplicantDetailPage() {
       await fetch(`/api/applications/${applicationId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          status: newStatus,
+          notification: data?.candidate?.id
+            ? {
+                userId: data.candidate.id,
+                title:
+                  newStatus === "ACCEPTED"
+                    ? "Application Accepted!"
+                    : "Application Status Update",
+                message: `Your application for "${
+                  data.jobTitle
+                }" has been ${newStatus.toLowerCase()}.`,
+                type:
+                  newStatus === "ACCEPTED"
+                    ? "APPLICATION_ACCEPTED"
+                    : "APPLICATION_REJECTED",
+                link: `/jobseeker/applications`,
+              }
+            : null,
+        }),
       });
     } catch (err) {
       console.error("Failed to update status", err);

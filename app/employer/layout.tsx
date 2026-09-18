@@ -11,6 +11,7 @@ export default function EmployerLayout({
   children: React.ReactNode;
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(256);
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">
@@ -19,7 +20,7 @@ export default function EmployerLayout({
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 rounded-lg text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
+            className="lg:hidden p-2 rounded-lg text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
             aria-label="Open navigation menu"
           >
             <span className="material-symbols-outlined text-2xl block">
@@ -45,8 +46,10 @@ export default function EmployerLayout({
         <SideNavBar
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
+          width={sidebarWidth}
+          onWidthChange={setSidebarWidth}
         />
-        <main className="flex-1 w-full overflow-y-auto">{children}</main>
+        <main className="flex-1 min-w-0 w-full">{children}</main>
       </div>
     </div>
   );

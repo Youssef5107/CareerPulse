@@ -16,7 +16,7 @@ export default function PageTransition({
   }, [pathname]);
 
   return (
-    <main key={pathname} className="animate-page-in">
+    <main key={pathname} className="animate-page-in motion-page">
       {children}
     </main>
   );

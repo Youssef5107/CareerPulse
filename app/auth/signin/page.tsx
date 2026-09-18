@@ -14,11 +14,11 @@ export default function SignInPage() {
     <div className="bg-background text-on-background font-sans antialiased gradient-bg flex flex-col min-h-screen">
       <main className="flex-grow flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
         {/* Background blobs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-secondary-container/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div className="motion-ambient absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div className="motion-ambient absolute top-1/3 right-1/4 w-72 h-72 bg-secondary-container/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50 [animation-delay:1.2s]"></div>
 
         {/* Signin Card */}
-        <div className="w-full max-w-md glass-panel rounded-[24px] p-6 sm:p-10 relative z-10">
+        <div className="motion-auth-card w-full max-w-md glass-panel rounded-[24px] p-6 sm:p-10 relative z-10">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-on-surface mb-2 flex items-center justify-center gap-2">

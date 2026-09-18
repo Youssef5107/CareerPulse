@@ -43,7 +43,7 @@ export default function SideNavBar({
       {/* Slide-out Sidebar covering full height */}
       <aside
         style={{ "--sidebar-width": `${width}px` } as React.CSSProperties}
-        className={`fixed top-16 bottom-0 w-64 bg-surface-container-low border-r border-outline-variant z-60 transition-[left] duration-200 ease-in-out flex flex-col justify-between p-4 overflow-hidden lg:sticky lg:top-16 lg:left-auto lg:h-[calc(100vh-4rem)] lg:w-(--sidebar-width) lg:shrink-0 lg:transition-[width] lg:duration-150 ${
+        className={`fixed top-0 bottom-auto h-dvh w-64 bg-surface-container-low border-r border-outline-variant z-60 transition-[left] duration-200 ease-in-out flex flex-col justify-between p-4 overflow-hidden lg:sticky lg:top-16 lg:bottom-0 lg:left-auto lg:h-[calc(100vh-4rem)] lg:w-(--sidebar-width) lg:shrink-0 lg:transition-[width] lg:duration-150 ${
           isOpen ? "left-0" : "-left-full"
         }`}
       >

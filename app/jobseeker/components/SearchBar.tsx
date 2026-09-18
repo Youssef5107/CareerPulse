@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SearchBar() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [query, setQuery] = useState("");
+  const [location, setLocation] = useState("");
 
-  const [query, setQuery] = useState(searchParams.get("query") || "");
-  const [location, setLocation] = useState(searchParams.get("location") || "");
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setQuery(searchParams.get("query") || "");
+    setLocation(searchParams.get("location") || "");
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

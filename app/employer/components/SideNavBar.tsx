@@ -34,6 +34,9 @@ export default function SideNavBar({
       icon: "notifications",
     },
   ];
+  const isPathActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
+  const isPostJobActive = isPathActive("/employer/post-job");
 
   return (
     <>
@@ -96,7 +99,12 @@ export default function SideNavBar({
               window.scrollTo({ top: 0, behavior: "auto" });
               onClose();
             }}
-            className="w-full bg-secondary text-on-secondary py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 hover:bg-secondary-container transition-colors shadow-sm"
+            className={`w-full py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors shadow-sm ${
+              isPostJobActive
+                ? "bg-secondary-container text-on-secondary-container"
+                : "bg-secondary text-on-secondary hover:bg-secondary-container"
+            }`}
+            aria-current={isPostJobActive ? "page" : undefined}
           >
             <span className="material-symbols-outlined text-xl">add</span>
             Post a Job
@@ -105,7 +113,7 @@ export default function SideNavBar({
           {/* Navigation Links */}
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = isPathActive(item.href);
               return (
                 <Link
                   key={item.href}
@@ -119,6 +127,7 @@ export default function SideNavBar({
                       ? "bg-secondary-container text-on-secondary-container"
                       : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
                   }`}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   <span className="material-symbols-outlined text-xl">
                     {item.icon}

@@ -11,11 +11,7 @@ export default async function EmployerDashboardPage() {
     redirect("/login");
   }
 
-  const [user, jobs, applications] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { firstName: true, name: true }, //
-    }),
+  const [jobs, applications] = await Promise.all([
     prisma.job.findMany({
       where: { postedById: session.user.id },
       select: { id: true, status: true, postedAt: true },
@@ -32,7 +28,7 @@ export default async function EmployerDashboardPage() {
             lastName: true,
             image: true,
             profile: {
-              select: { headline: true, matchScore: true },
+              select: { headline: true },
             },
           },
         },
@@ -187,7 +183,6 @@ export default async function EmployerDashboardPage() {
                   `${app.user.firstName || ""} ${app.user.lastName || ""}`.trim() ||
                   "Anonymous Candidate";
                 const headline = app.user.profile?.headline || app.job.title;
-                const matchScore = app.user.profile?.matchScore ?? 85;
                 const initials = applicantName
                   .split(" ")
                   .map((n) => n[0])
@@ -196,8 +191,9 @@ export default async function EmployerDashboardPage() {
                   .toUpperCase();
 
                 return (
-                  <div
+                  <Link
                     key={app.id}
+                    href={`/employer/applicants/${app.id}`}
                     className="flex items-center justify-between p-4 md:p-6 border-b border-surface-container-high hover:bg-surface-bright transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center gap-4">
@@ -229,11 +225,8 @@ export default async function EmployerDashboardPage() {
                           day: "numeric",
                         })}
                       </p>
-                      <span className="inline-block px-2 py-1 bg-surface-container rounded-md text-xs font-semibold text-on-surface">
-                        Match: {matchScore}%
-                      </span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })
             )}

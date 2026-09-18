@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import SideNavBar from "./components/SideNavBar";
 import NotificationBell from "../components/NotificationBell";
+import PageTransition from "../components/PageTransition";
 
 export default function EmployerLayout({
   children,
@@ -49,7 +50,9 @@ export default function EmployerLayout({
           width={sidebarWidth}
           onWidthChange={setSidebarWidth}
         />
-        <main className="flex-1 min-w-0 w-full">{children}</main>
+        <main className="flex-1 min-w-0 w-full">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );

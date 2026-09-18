@@ -14,19 +14,71 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const role = auth?.user?.role;
+      const pathname = nextUrl.pathname;
+      const isJobSeekerRoute = pathname.startsWith("/jobseeker");
+      const isEmployerRoute = pathname.startsWith("/employer");
+      const isAuthRoute = pathname.startsWith("/auth/");
+      const roleHome =
+        role === "JOB_SEEKER" ? "/jobseeker/home" : "/employer/dashboard";
+      const redirectToRoleHome = () =>
+        Response.redirect(new URL(roleHome, nextUrl));
+      const matchesRoute = (route: string) =>
+        pathname === route || pathname.startsWith(`${route}/`);
 
-      const isJobSeekerRoute = nextUrl.pathname.startsWith("/jobseeker");
-      const isEmployerRoute = nextUrl.pathname.startsWith("/employer");
+      if (pathname === "/") {
+        return isLoggedIn
+          ? redirectToRoleHome()
+          : Response.redirect(new URL("/auth/signin", nextUrl));
+      }
+
+      if (isAuthRoute && isLoggedIn) {
+        return redirectToRoleHome();
+      }
 
       if ((isJobSeekerRoute || isEmployerRoute) && !isLoggedIn) {
-        return false; // NextAuth redirects to pages.signIn automatically
+        return false;
       }
 
-      if (isJobSeekerRoute && role !== "JOB_SEEKER") {
-        return Response.redirect(new URL("/jobseeker/home", nextUrl));
+      if (isJobSeekerRoute) {
+        if (role !== "JOB_SEEKER") return redirectToRoleHome();
+
+        const isKnownRoute = [
+          "/jobseeker/home",
+          "/jobseeker/search",
+          "/jobseeker/saved",
+          "/jobseeker/profile",
+          "/jobseeker/notifications",
+          "/jobseeker/settings",
+          "/jobseeker/categories",
+          "/jobseeker/jobs",
+        ].some(matchesRoute);
+
+        if (!isKnownRoute) {
+          return Response.redirect(new URL("/jobseeker/home", nextUrl));
+        }
       }
-      if (isEmployerRoute && role !== "EMPLOYER") {
-        return Response.redirect(new URL("/employer/dashboard", nextUrl));
+
+      if (isEmployerRoute) {
+        if (role !== "EMPLOYER") return redirectToRoleHome();
+
+        if (pathname === "/employer/post-job") {
+          return Response.redirect(
+            new URL("/employer/post-job/job-details", nextUrl),
+          );
+        }
+
+        const isKnownRoute = [
+          "/employer/dashboard",
+          "/employer/postings",
+          "/employer/post-job",
+          "/employer/applicants",
+          "/employer/notifications",
+          "/employer/settings",
+        ].some(matchesRoute);
+
+        if (!isKnownRoute) {
+          return Response.redirect(new URL("/employer/dashboard", nextUrl));
+        }
       }
 
       return true;

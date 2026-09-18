@@ -66,6 +66,28 @@
       transform: translateY(20px) scale(0.96);
     }
   }
+
+  @keyframes confirmation-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes confirmation-exit {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.94) translateY(-10px);
+    }
+  }
 }
 
 .toast-notification {
@@ -79,6 +101,16 @@
 .toast-notification-exit {
   animation: toast-exit 300ms ease-in both;
   pointer-events: none;
+}
+
+.confirmation-message-enter {
+  animation:
+    confirmation-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both,
+    confirmation-exit 360ms ease-in 2.8s forwards;
+}
+
+.confirmation-message-exit {
+  animation: confirmation-exit 300ms ease-in both;
 }
 
 /* Custom Utilities */

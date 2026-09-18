@@ -15,11 +15,11 @@ export default function SignUpPage() {
     <div className="bg-background font-body-md text-on-background antialiased gradient-bg flex flex-col min-h-screen">
       <main className="flex-grow flex items-center justify-center p-4 md:p-12 pb-12 relative overflow-hidden">
         {/* Decorative background blobs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-secondary-container/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div className="motion-ambient absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div className="motion-ambient absolute top-1/3 right-1/4 w-72 h-72 bg-secondary-container/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50 [animation-delay:1.2s]"></div>
 
         {/* Signup Card */}
-        <div className="w-full max-w-[480px] glass-panel rounded-[24px] p-6 md:p-10 relative z-10">
+        <div className="motion-auth-card w-full max-w-[480px] glass-panel rounded-[24px] p-6 md:p-10 relative z-10">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-on-surface mb-2">
               Create an account

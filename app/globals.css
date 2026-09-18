@@ -88,6 +88,49 @@
       transform: scale(0.94) translateY(-10px);
     }
   }
+
+  @keyframes content-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes surface-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes ambient-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(18px, -14px, 0) scale(1.08);
+    }
+  }
+
+  @keyframes auth-card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
 .toast-notification {
@@ -115,6 +158,71 @@
 
 .confirmation-dialog-enter {
   animation: confirmation-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.motion-page {
+  animation: content-reveal 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.motion-page [class*="rounded-2xl"],
+.motion-page [class*="rounded-3xl"] {
+  animation: surface-reveal 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.motion-page [class*="rounded-2xl"]:nth-child(2),
+.motion-page [class*="rounded-3xl"]:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.motion-page [class*="rounded-2xl"]:nth-child(3),
+.motion-page [class*="rounded-3xl"]:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.motion-auth-card {
+  animation: auth-card-enter 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.motion-ambient {
+  animation: ambient-drift 7s ease-in-out infinite;
+}
+
+button,
+a {
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0) scale(0.97);
+}
+
+input,
+select,
+textarea {
+  transition-duration: 220ms;
+  transition-property: border-color, box-shadow, transform, background-color;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Custom Utilities */

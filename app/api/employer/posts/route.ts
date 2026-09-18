@@ -75,9 +75,9 @@ export async function POST(req: Request) {
       },
     });
 
-    // 5. Non-blocking Notification Dispatch for matching Job Seekers
+    // 5. Non-blocking notification dispatch for relevant job seekers
     try {
-      const matchingSeekers = await prisma.user.findMany({
+      const notifiedSeekers = await prisma.user.findMany({
         where: {
           role: "JOB_SEEKER",
           profile: {
@@ -87,11 +87,11 @@ export async function POST(req: Request) {
         select: { id: true },
       });
 
-      if (matchingSeekers.length > 0) {
+      if (notifiedSeekers.length > 0) {
         await prisma.notification.createMany({
-          data: matchingSeekers.map((seeker) => ({
+          data: notifiedSeekers.map((seeker) => ({
             userId: seeker.id,
-            title: "New Job Match!",
+            title: "New Job Opportunity!",
             message: `A new job for "${newJob.title}" was just posted.`,
             type: "NEW_JOB_MATCH",
             link: `/jobseeker/jobs/${newJob.id}`,
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       }
     } catch (notificationError) {
       console.error(
-        "Failed to send job match notifications:",
+        "Failed to send job opportunity notifications:",
         notificationError,
       );
     }

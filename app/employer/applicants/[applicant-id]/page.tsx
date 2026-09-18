@@ -43,7 +43,6 @@ interface ApplicantDetailData {
     summary: string;
     skills: string[];
     cvUrl?: string | null;
-    matchScore: number;
     recruiterNotes: string;
     experiences: Experience[];
     educations: Education[];
@@ -451,12 +450,6 @@ export default function ApplicantDetailPage() {
                 Applied for {data.jobTitle || "N/A"}
               </div>
               <div className="space-y-2 text-sm text-slate-600">
-                <div className="flex justify-between">
-                  <span>Match Score:</span>
-                  <span className="font-bold text-slate-900">
-                    {candidate.matchScore ?? "N/A"}%
-                  </span>
-                </div>
                 <div className="flex justify-between">
                   <span>Applied Date:</span>
                   <span>

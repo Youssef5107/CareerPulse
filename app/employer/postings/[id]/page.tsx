@@ -95,7 +95,7 @@ export default async function PostingOverviewPage({
 
             <Link
               href="/employer/applicants"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-semibold text-on-secondary transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-on-secondary transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
             >
               <span className="material-symbols-outlined text-lg">group</span>
               View applicants

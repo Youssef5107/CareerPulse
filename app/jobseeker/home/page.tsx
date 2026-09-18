@@ -62,7 +62,7 @@ export default async function JobSeekerHomePage() {
             Find your next <br /> career move
           </h1>
           <p className="text-slate-500 mt-2 text-sm md:text-base max-w-xl">
-            Discover opportunities that match your skills, experience, and
+            Discover opportunities that fit your skills, experience, and
             aspirations across top global companies.
           </p>
         </div>

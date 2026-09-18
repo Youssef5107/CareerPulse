@@ -58,7 +58,6 @@ export async function GET(request: Request, context: RouteParams) {
         summary: application.user.profile?.summary ?? "No summary provided.",
         skills: application.user.profile?.skills ?? [],
         cvUrl: application.user.profile?.cvUrl,
-        matchScore: application.user.profile?.matchScore ?? 90,
         recruiterNotes:
           application.user.profile?.recruiterNotes ??
           "No recruiter notes available.",

@@ -154,8 +154,8 @@ export default function PostJobDescriptionPage() {
                   },
                   {
                     id: "401k",
-                    label: "401(k) Matching",
-                    desc: "Up to 5% company match",
+                    label: "401(k) Contribution",
+                    desc: "Up to 5% company contribution",
                   },
                   {
                     id: "remote",

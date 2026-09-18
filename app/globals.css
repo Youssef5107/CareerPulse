@@ -160,6 +160,10 @@
   animation: confirmation-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.navigation-loading-enter {
+  animation: confirmation-enter 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .motion-page {
   animation: content-reveal 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }

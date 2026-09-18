@@ -14,17 +14,37 @@ export default function RecentlyViewed() {
   const [recentJobs, setRecentJobs] = useState<JobItem[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("recently_viewed_jobs");
-    if (stored) {
+    const loadRecentJobs = () => {
       try {
-        const parsed = JSON.parse(stored);
-        queueMicrotask(() => {
-          setRecentJobs(parsed);
-        });
-      } catch (e) {
-        console.error("Failed to parse recently viewed jobs", e);
+        const stored = localStorage.getItem("recently_viewed_jobs");
+        const parsed = stored ? JSON.parse(stored) : [];
+        setRecentJobs(
+          Array.isArray(parsed)
+            ? parsed.filter((job): job is JobItem =>
+                Boolean(
+                  job &&
+                  typeof job.id === "string" &&
+                  typeof job.title === "string" &&
+                  typeof job.company === "string" &&
+                  typeof job.location === "string",
+                ),
+              )
+            : [],
+        );
+      } catch (error) {
+        console.error("Failed to parse recently viewed jobs", error);
+        setRecentJobs([]);
       }
-    }
+    };
+
+    loadRecentJobs();
+    window.addEventListener("storage", loadRecentJobs);
+    window.addEventListener("recently-viewed-updated", loadRecentJobs);
+
+    return () => {
+      window.removeEventListener("storage", loadRecentJobs);
+      window.removeEventListener("recently-viewed-updated", loadRecentJobs);
+    };
   }, []);
 
   if (recentJobs.length === 0) return null;

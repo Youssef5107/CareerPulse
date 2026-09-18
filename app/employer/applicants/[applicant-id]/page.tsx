@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { showToast } from "@/store/features/toast/toastSlice";
+import ConfirmationMessage from "@/app/components/ConfirmationMessage";
 
 interface Experience {
   id: string;
@@ -56,6 +57,10 @@ export default function ApplicantDetailPage() {
   const [data, setData] = useState<ApplicantDetailData | null>(null);
   const [status, setStatus] = useState<string>("PENDING");
   const [loading, setLoading] = useState<boolean>(true);
+  const [decisionLoading, setDecisionLoading] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
+    null,
+  );
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -119,6 +124,9 @@ export default function ApplicantDetailPage() {
   }, [applicationId, dispatch]);
 
   const handleUpdateStatus = async (newStatus: string) => {
+    if (decisionLoading || status === newStatus) return;
+
+    setDecisionLoading(true);
     setStatus(newStatus);
     try {
       const res = await fetch(`/api/applications/${applicationId}`, {
@@ -155,11 +163,8 @@ export default function ApplicantDetailPage() {
         );
       }
 
-      dispatch(
-        showToast({
-          message: `Application ${newStatus.toLowerCase()} successfully.`,
-          variant: "success",
-        }),
+      setConfirmationMessage(
+        `Application ${newStatus.toLowerCase()} successfully.`,
       );
     } catch (err) {
       console.error("Failed to update status", err);
@@ -175,6 +180,8 @@ export default function ApplicantDetailPage() {
           variant: "error",
         }),
       );
+    } finally {
+      setDecisionLoading(false);
     }
   };
 
@@ -212,6 +219,13 @@ export default function ApplicantDetailPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 font-sans relative flex flex-col">
+      {confirmationMessage && (
+        <ConfirmationMessage
+          key={confirmationMessage}
+          message={confirmationMessage}
+          onDismiss={() => setConfirmationMessage(null)}
+        />
+      )}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
         {/* Back Link */}
         <div className="flex items-center gap-2 mb-2 text-slate-500">
@@ -461,10 +475,11 @@ export default function ApplicantDetailPage() {
               <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col gap-2">
                 <button
                   onClick={() => handleUpdateStatus("ACCEPTED")}
+                  disabled={decisionLoading || status === "REJECTED"}
                   className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
                     status === "ACCEPTED"
                       ? "bg-emerald-600 text-white"
-                      : "bg-slate-900 text-white hover:bg-slate-800"
+                      : "bg-slate-900 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
                   }`}
                 >
                   <span className="material-symbols-outlined text-base">
@@ -476,10 +491,11 @@ export default function ApplicantDetailPage() {
                 </button>
                 <button
                   onClick={() => handleUpdateStatus("REJECTED")}
+                  disabled={decisionLoading || status === "ACCEPTED"}
                   className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 border ${
                     status === "REJECTED"
                       ? "bg-red-50 text-red-700 border-red-200"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
                   }`}
                 >
                   <span className="material-symbols-outlined text-base">

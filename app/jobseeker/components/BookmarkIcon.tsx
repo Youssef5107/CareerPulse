@@ -15,12 +15,15 @@ export default function BookmarkIcon({
   initialIsSaved,
 }: BookmarkIconProps) {
   const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (loading) return;
+    setLoading(true);
 
     try {
       const res = await fetch(`/api/jobs/${jobId}/save`, { method: "POST" });
@@ -61,6 +64,8 @@ export default function BookmarkIcon({
           variant: "error",
         }),
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,12 +73,22 @@ export default function BookmarkIcon({
     <button
       type="button"
       onClick={handleToggle}
+      disabled={loading}
+      aria-label={isSaved ? "Remove saved job" : "Save job"}
       className={`shrink-0 z-20 p-1 transition-colors ${
-        isSaved ? "text-[#142175]" : "text-slate-400 hover:text-slate-600"
+        loading
+          ? "cursor-wait opacity-60"
+          : isSaved
+            ? "text-[#142175]"
+            : "text-slate-400 hover:text-slate-600"
       }`}
     >
       <span className="material-symbols-outlined">
-        {isSaved ? "bookmark_added" : "bookmark"}
+        {loading
+          ? "progress_activity"
+          : isSaved
+            ? "bookmark_added"
+            : "bookmark"}
       </span>
     </button>
   );

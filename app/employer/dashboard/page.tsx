@@ -45,17 +45,10 @@ export default async function EmployerDashboardPage() {
   const pendingAppsCount = applications.filter(
     (a) => a.status === "PENDING",
   ).length;
-  const recentApplicants = applications.slice(0, 3);
-
-  // Pipeline status breakdown
-  const screeningCount = applications.filter(
-    (a) => a.status === "PENDING" || a.status === "SCREENING",
-  ).length;
-  const interviewingCount = applications.filter(
+  const interviewsScheduledCount = applications.filter(
     (a) => a.status === "INTERVIEWING",
   ).length;
-  const offerCount = applications.filter((a) => a.status === "OFFER").length;
-  const totalAppsCount = applications.length || 1; // avoid division by 0
+  const recentApplicants = applications.slice(0, 3);
 
   const employerName = session.user.name?.split(" ")[0] || "Employer";
   const currentDateFormatted = new Date().toLocaleDateString("en-US", {
@@ -148,7 +141,7 @@ export default async function EmployerDashboardPage() {
             Interviews Scheduled
           </p>
           <h3 className="text-5xl font-bold text-primary leading-tight">
-            {interviewingCount}
+            {interviewsScheduledCount}
           </h3>
         </div>
       </div>
@@ -233,7 +226,7 @@ export default async function EmployerDashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions & Pipeline Side */}
+        {/* Quick Actions & Posting Overview Side */}
         <div className="flex flex-col gap-4 lg:gap-6">
           <div className="bg-primary text-on-primary rounded-xl p-6 shadow-sm relative overflow-hidden">
             <div className="absolute -right-8 -top-8 w-32 h-32 bg-secondary rounded-full opacity-20 blur-2xl"></div>
@@ -269,59 +262,30 @@ export default async function EmployerDashboardPage() {
             </div>
           </div>
 
-          {/* Pipeline Card */}
           <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm flex-1">
             <h3 className="text-sm font-medium text-primary mb-4 uppercase tracking-wider">
-              Hiring Pipeline
+              Posting Overview
             </h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-sm text-on-surface">Screening</span>
-                  <span className="text-xs font-semibold text-on-surface-variant">
-                    {screeningCount} candidates
-                  </span>
-                </div>
-                <div className="w-full bg-surface-container-high rounded-full h-2">
-                  <div
-                    className="bg-secondary h-2 rounded-full transition-all"
-                    style={{
-                      width: `${Math.round((screeningCount / totalAppsCount) * 100)}%`,
-                    }}
-                  ></div>
-                </div>
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center justify-between border-b border-surface-container-high pb-3">
+                <span className="text-on-surface-variant">Active posts</span>
+                <span className="font-bold text-primary">
+                  {activePostingsCount}
+                </span>
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-sm text-on-surface">Interviewing</span>
-                  <span className="text-xs font-semibold text-on-surface-variant">
-                    {interviewingCount} candidates
-                  </span>
-                </div>
-                <div className="w-full bg-surface-container-high rounded-full h-2">
-                  <div
-                    className="bg-tertiary h-2 rounded-full transition-all"
-                    style={{
-                      width: `${Math.round((interviewingCount / totalAppsCount) * 100)}%`,
-                    }}
-                  ></div>
-                </div>
+              <div className="flex items-center justify-between border-b border-surface-container-high pb-3">
+                <span className="text-on-surface-variant">
+                  Applications received
+                </span>
+                <span className="font-bold text-primary">
+                  {applications.length}
+                </span>
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-sm text-on-surface">Offer Stage</span>
-                  <span className="text-xs font-semibold text-on-surface-variant">
-                    {offerCount} candidates
-                  </span>
-                </div>
-                <div className="w-full bg-surface-container-high rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all"
-                    style={{
-                      width: `${Math.round((offerCount / totalAppsCount) * 100)}%`,
-                    }}
-                  ></div>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-on-surface-variant">Awaiting review</span>
+                <span className="font-bold text-secondary">
+                  {pendingAppsCount}
+                </span>
               </div>
             </div>
           </div>

@@ -24,6 +24,11 @@ export default function SideNavBar({
     { label: "Search", href: "/jobseeker/search", icon: "search" },
     { label: "Saved", href: "/jobseeker/saved", icon: "bookmark" },
     { label: "Profile", href: "/jobseeker/profile", icon: "person" },
+    {
+      label: "Notifications",
+      href: "/jobseeker/notifications",
+      icon: "notifications",
+    },
   ];
 
   return (

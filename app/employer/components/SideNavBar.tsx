@@ -28,6 +28,11 @@ export default function SideNavBar({
       icon: "add_circle",
     },
     { label: "Applicants", href: "/employer/applicants", icon: "group" },
+    {
+      label: "Notifications",
+      href: "/employer/notifications",
+      icon: "notifications",
+    },
   ];
 
   return (

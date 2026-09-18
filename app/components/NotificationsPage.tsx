@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getNotificationHref } from "@/lib/notifications";
 
 interface NotificationItem {
   id: string;
@@ -13,12 +14,6 @@ interface NotificationItem {
 }
 
 const PAGE_SIZE = 10;
-
-function getNotificationHref(link: string | null | undefined) {
-  if (!link) return "#";
-  if (link.startsWith("/jobs/")) return `/jobseeker${link}`;
-  return link;
-}
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);

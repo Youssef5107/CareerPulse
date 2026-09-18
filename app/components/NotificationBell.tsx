@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getNotificationHref } from "@/lib/notifications";
 
 type Notification = {
   id: string;
@@ -67,7 +68,8 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <Link
                   key={n.id}
-                  href={n.link || "#"}
+                  href={getNotificationHref(n.link)}
+                  onClick={() => setIsOpen(false)}
                   className="block p-2.5 rounded-xl hover:bg-surface-container-low transition-colors text-left"
                 >
                   <p className="text-xs font-semibold text-on-surface">

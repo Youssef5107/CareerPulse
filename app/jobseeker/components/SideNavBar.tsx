@@ -30,6 +30,8 @@ export default function SideNavBar({
       icon: "notifications",
     },
   ];
+  const isPathActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <>
@@ -88,7 +90,7 @@ export default function SideNavBar({
           {/* Navigation Links */}
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = isPathActive(item.href);
               return (
                 <Link
                   key={item.href}
@@ -102,6 +104,7 @@ export default function SideNavBar({
                       ? "bg-secondary-container text-on-secondary-container"
                       : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
                   }`}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   <span className="material-symbols-outlined text-xl">
                     {item.icon}

@@ -25,19 +25,47 @@ export default function NavigationLoading() {
   } | null>(null);
 
   useEffect(() => {
+    setTimeout(() => {
+      setPendingNavigation(null);
+    }, 0);
+  }, [pathname]);
+
+  // 2. Handle click and browser back/forward listeners
+  useEffect(() => {
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       const anchor = target?.closest("a");
       if (anchor && isNavigationClick(event, anchor)) {
+        if (fallbackTimer) clearTimeout(fallbackTimer);
         setPendingNavigation({
           targetPath: new URL(anchor.href).pathname,
           startPath: pathname,
         });
+        fallbackTimer = setTimeout(() => {
+          setPendingNavigation(null);
+        }, 10000);
       }
     };
 
+    const resetState = () => {
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      setPendingNavigation(null);
+    };
+
     document.addEventListener("click", handleClick, true);
-    return () => document.removeEventListener("click", handleClick, true);
+    window.addEventListener("popstate", resetState);
+    window.addEventListener("pagehide", resetState);
+    window.addEventListener("pageshow", resetState);
+
+    return () => {
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      document.removeEventListener("click", handleClick, true);
+      window.removeEventListener("popstate", resetState);
+      window.removeEventListener("pagehide", resetState);
+      window.removeEventListener("pageshow", resetState);
+    };
   }, [pathname]);
 
   if (!pendingNavigation || pendingNavigation.startPath !== pathname) {

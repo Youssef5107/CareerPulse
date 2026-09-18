@@ -64,6 +64,9 @@ export async function PATCH(req: Request) {
             ? `${body.firstName} ${body.lastName}`
             : undefined,
         ...(body.email !== undefined && { email: body.email }),
+        ...(body.companyName !== undefined && {
+          companyName: body.companyName,
+        }),
         ...(body.image !== undefined && { image: body.image }),
         profile: {
           upsert: {

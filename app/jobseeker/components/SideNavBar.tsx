@@ -55,6 +55,12 @@ export default function SideNavBar({
       activePaths: ["/jobseeker/notifications"],
       icon: "notifications",
     },
+    {
+      label: "Settings",
+      href: "/jobseeker/settings",
+      activePaths: ["/jobseeker/settings"],
+      icon: "settings",
+    },
   ];
 
   const isPathActive = (activePaths: string[]) =>

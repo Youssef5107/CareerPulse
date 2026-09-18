@@ -19,22 +19,30 @@ function isNavigationClick(event: MouseEvent, anchor: HTMLAnchorElement) {
 
 export default function NavigationLoading() {
   const pathname = usePathname();
-  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    targetPath: string;
+    startPath: string;
+  } | null>(null);
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       const anchor = target?.closest("a");
       if (anchor && isNavigationClick(event, anchor)) {
-        setPendingPath(new URL(anchor.href).pathname);
+        setPendingNavigation({
+          targetPath: new URL(anchor.href).pathname,
+          startPath: pathname,
+        });
       }
     };
 
     document.addEventListener("click", handleClick, true);
     return () => document.removeEventListener("click", handleClick, true);
-  }, []);
+  }, [pathname]);
 
-  if (!pendingPath || pendingPath === pathname) return null;
+  if (!pendingNavigation || pendingNavigation.startPath !== pathname) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-90 flex items-center justify-center bg-background/70 backdrop-blur-sm navigation-loading-enter">

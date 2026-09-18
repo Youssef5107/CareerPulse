@@ -153,7 +153,7 @@ export default function SideNavBar({
         {/* Footer Links */}
         <div className="border-t border-outline-variant pt-4 flex flex-col gap-1">
           <Link
-            href="/help"
+            href="/jobseeker/help"
             onClick={() => {
               window.scrollTo({ top: 0, behavior: "auto" });
               onClose();

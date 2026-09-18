@@ -113,6 +113,10 @@
   animation: confirmation-exit 300ms ease-in both;
 }
 
+.confirmation-dialog-enter {
+  animation: confirmation-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* Custom Utilities */
 @utility glass-panel {
   background: rgba(255, 255, 255, 0.7);

@@ -34,10 +34,10 @@ export default function SideNavBar({
       href: "/employer/notifications",
       icon: "notifications",
     },
+    { label: "Settings", href: "/employer/settings", icon: "settings" },
   ];
   const isPathActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
-  const isPostJobActive = isPathActive("/employer/post-job");
 
   return (
     <>

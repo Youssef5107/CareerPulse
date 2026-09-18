@@ -29,7 +29,7 @@ export default function EmployerLayout({
             </span>
           </button>
           <Link
-            href="/employer/dashboard"
+            href="/jobseeker/home"
             onClick={() => {
               window.scrollTo({ top: 0, behavior: "auto" });
             }}

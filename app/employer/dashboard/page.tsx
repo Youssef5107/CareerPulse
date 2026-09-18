@@ -250,7 +250,7 @@ export default async function EmployerDashboardPage() {
             </h3>
             <div className="flex flex-col gap-4 relative z-10">
               <Link
-                href="/employer/post-job"
+                href="/employer/post-job/job-details"
                 className="w-full bg-secondary hover:bg-secondary-container text-on-secondary text-sm font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-between group cursor-pointer"
               >
                 <div className="flex items-center gap-2">

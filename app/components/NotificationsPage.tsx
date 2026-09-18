@@ -14,6 +14,12 @@ interface NotificationItem {
 
 const PAGE_SIZE = 10;
 
+function getNotificationHref(link: string | null | undefined) {
+  if (!link) return "#";
+  if (link.startsWith("/jobs/")) return `/jobseeker${link}`;
+  return link;
+}
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -110,7 +116,7 @@ export default function NotificationsPage() {
             {visibleNotifications.map((notification) => (
               <Link
                 key={notification.id}
-                href={notification.link || "#"}
+                href={getNotificationHref(notification.link)}
                 className="group flex gap-4 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-secondary/50 hover:shadow-md md:p-5"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-secondary">

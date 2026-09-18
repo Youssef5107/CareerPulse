@@ -108,7 +108,7 @@ export default async function JobSeekerHomePage() {
                 Explore Categories
               </h2>
               <Link
-                href="/jobseeker/categories"
+                href="/jobseeker/search"
                 className="text-xs font-semibold text-blue-600 hover:underline"
               >
                 View all

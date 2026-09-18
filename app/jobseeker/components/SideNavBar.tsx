@@ -21,18 +21,46 @@ export default function SideNavBar({
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Home", href: "/jobseeker/home", icon: "home" },
-    { label: "Search", href: "/jobseeker/search", icon: "search" },
-    { label: "Saved", href: "/jobseeker/saved", icon: "bookmark" },
-    { label: "Profile", href: "/jobseeker/profile", icon: "person" },
+    {
+      label: "Home",
+      href: "/jobseeker/home",
+      activePaths: ["/jobseeker/home"],
+      icon: "home",
+    },
+    {
+      label: "Search",
+      href: "/jobseeker/search",
+      activePaths: [
+        "/jobseeker/search",
+        "/jobseeker/categories",
+        "/jobseeker/jobs",
+      ],
+      icon: "search",
+    },
+    {
+      label: "Saved",
+      href: "/jobseeker/saved",
+      activePaths: ["/jobseeker/saved"],
+      icon: "bookmark",
+    },
+    {
+      label: "Profile",
+      href: "/jobseeker/profile",
+      activePaths: ["/jobseeker/profile"],
+      icon: "person",
+    },
     {
       label: "Notifications",
       href: "/jobseeker/notifications",
+      activePaths: ["/jobseeker/notifications"],
       icon: "notifications",
     },
   ];
-  const isPathActive = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+
+  const isPathActive = (activePaths: string[]) =>
+    activePaths.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    );
 
   return (
     <>
@@ -52,7 +80,6 @@ export default function SideNavBar({
         }`}
       >
         <div className="flex flex-col gap-6">
-          {/* Top Header inside Sidebar with Close (X) Button */}
           {/* Top Header inside Sidebar with Close (X) Button */}
           <div className="flex items-center justify-between px-2 pt-2">
             <div className="flex items-center gap-3">
@@ -91,7 +118,7 @@ export default function SideNavBar({
           {/* Navigation Links */}
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = isPathActive(item.href);
+              const isActive = isPathActive(item.activePaths);
               return (
                 <Link
                   key={item.href}

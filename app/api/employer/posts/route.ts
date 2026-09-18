@@ -94,7 +94,7 @@ export async function POST(req: Request) {
             title: "New Job Match!",
             message: `A new job for "${newJob.title}" was just posted.`,
             type: "NEW_JOB_MATCH",
-            link: `/jobs/${newJob.id}`,
+            link: `/jobseeker/jobs/${newJob.id}`,
           })),
         });
       }

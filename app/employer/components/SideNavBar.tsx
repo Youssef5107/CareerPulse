@@ -93,24 +93,6 @@ export default function SideNavBar({
             </button>
           </div>
 
-          {/* Action Button */}
-          <Link
-            href="/employer/post-job/job-details"
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "auto" });
-              onClose();
-            }}
-            className={`w-full py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors shadow-sm ${
-              isPostJobActive
-                ? "bg-secondary-container text-on-secondary-container"
-                : "bg-secondary text-on-secondary hover:bg-secondary-container"
-            }`}
-            aria-current={isPostJobActive ? "page" : undefined}
-          >
-            <span className="material-symbols-outlined text-xl">add</span>
-            Post a Job
-          </Link>
-
           {/* Navigation Links */}
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => {

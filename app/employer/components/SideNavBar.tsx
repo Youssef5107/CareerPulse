@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LogoutButton from "@/app/components/LogoutButton";
 
 interface SideNavBarProps {
   isOpen: boolean;
@@ -152,13 +153,7 @@ export default function SideNavBar({
             <span className="material-symbols-outlined text-xl">help</span>
             Help
           </Link>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors w-full text-left cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-xl">logout</span>
-            Logout
-          </button>
+          <LogoutButton onClose={onClose} />
         </div>
 
         <div

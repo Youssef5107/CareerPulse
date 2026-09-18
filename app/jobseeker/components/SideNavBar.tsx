@@ -7,9 +7,16 @@ import { usePathname } from "next/navigation";
 interface SideNavBarProps {
   isOpen: boolean;
   onClose: () => void;
+  width: number;
+  onWidthChange: (width: number) => void;
 }
 
-export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
+export default function SideNavBar({
+  isOpen,
+  onClose,
+  width,
+  onWidthChange,
+}: SideNavBarProps) {
   const pathname = usePathname();
 
   const navItems = [
@@ -24,15 +31,16 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
       {/* Overlay Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-50 transition-opacity"
+          className="fixed inset-0 bg-black/40 z-50 transition-opacity lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Slide-out Sidebar covering full height */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-surface-container-low border-r border-outline-variant z-[60] transform transition-transform duration-200 ease-in-out flex flex-col justify-between p-4 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        style={{ "--sidebar-width": `${width}px` } as React.CSSProperties}
+        className={`fixed top-16 bottom-0 w-64 bg-surface-container-low border-r border-outline-variant z-60 transition-[left] duration-200 ease-in-out flex flex-col justify-between p-4 overflow-hidden lg:sticky lg:top-16 lg:left-auto lg:h-[calc(100vh-4rem)] lg:w-(--sidebar-width) lg:shrink-0 lg:transition-[width] lg:duration-150 ${
+          isOpen ? "left-0" : "-left-full"
         }`}
       >
         <div className="flex flex-col gap-6">
@@ -63,7 +71,7 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
+              className="lg:hidden p-1.5 rounded-full hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer"
               aria-label="Close sidebar"
             >
               <span className="material-symbols-outlined text-xl block">
@@ -121,6 +129,31 @@ export default function SideNavBar({ isOpen, onClose }: SideNavBarProps) {
             Logout
           </button>
         </div>
+
+        <div
+          role="separator"
+          aria-label="Resize sidebar"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            const startX = event.clientX;
+            const startWidth = width;
+            const handlePointerMove = (moveEvent: PointerEvent) => {
+              onWidthChange(
+                Math.min(
+                  380,
+                  Math.max(220, startWidth + moveEvent.clientX - startX),
+                ),
+              );
+            };
+            const handlePointerUp = () => {
+              window.removeEventListener("pointermove", handlePointerMove);
+              window.removeEventListener("pointerup", handlePointerUp);
+            };
+            window.addEventListener("pointermove", handlePointerMove);
+            window.addEventListener("pointerup", handlePointerUp);
+          }}
+          className="hidden lg:block absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-secondary/40 active:bg-secondary/60"
+        />
       </aside>
     </>
   );

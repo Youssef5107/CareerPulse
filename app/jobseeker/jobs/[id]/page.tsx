@@ -21,11 +21,20 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
 
   const job = await prisma.job.findUnique({
     where: { id },
+    include: {
+      postedBy: {
+        select: {
+          companyName: true,
+        },
+      },
+    },
   });
 
   if (!job) {
     notFound();
   }
+
+  const companyName = job.postedBy.companyName || job.company;
 
   const isClosed =
     (job as unknown as { status?: string }).status === "CLOSED" ||
@@ -112,7 +121,7 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
         <div className="bg-white rounded-2xl p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30 mb-6">
           <div className="flex items-start gap-3.5 md:gap-5 mb-4">
             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-[#e7e8ee] border border-[#c6c5d3]/20 shrink-0 flex items-center justify-center font-bold text-base md:text-lg text-[#454651]">
-              {job.company.slice(0, 2).toUpperCase()}
+              {companyName.slice(0, 2).toUpperCase()}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -140,7 +149,7 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
 
               <p className="text-xs md:text-sm text-[#454651] mt-1">
                 <span className="font-semibold text-[#191c20]">
-                  {job.company}
+                  {companyName}
                 </span>{" "}
                 • {job.location}
               </p>
@@ -259,35 +268,37 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
 
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#e1e2e8] flex items-center justify-center text-xs font-bold text-[#454651] shrink-0">
-                  {job.company.slice(0, 2).toUpperCase()}
+                  {companyName.slice(0, 2).toUpperCase()}
                 </div>
 
                 <div>
                   <h4 className="text-xs md:text-sm font-semibold text-[#191c20]">
-                    {job.company} Team
+                    {companyName}
                   </h4>
 
                   <p className="text-[11px] text-[#454651]">Recruiting Team</p>
                 </div>
               </div>
 
-              <button className="w-full bg-[#f8f9ff] text-[#142175] border border-[#767682]/40 text-xs md:text-sm font-semibold h-10 rounded-xl hover:bg-[#eff4ff] transition-colors duration-200">
-                Message
-              </button>
+              {/*
+                  <button className="w-full bg-[#f8f9ff] text-[#142175] border border-[#767682]/40 text-xs md:text-sm font-semibold h-10 rounded-xl hover:bg-[#eff4ff] transition-colors duration-200">
+                    Message
+                  </button>
+                  */}
             </div>
 
             <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#c6c5d3]/30">
               <h3 className="text-[11px] font-semibold text-[#454651] mb-2 uppercase tracking-wider">
-                About {job.company}
+                About {companyName}
               </h3>
 
               <p className="text-xs md:text-sm text-[#454651] mb-3 leading-relaxed">
-                {job.company} designs modern software systems focused on
+                {companyName} designs modern software systems focused on
                 building impactful digital user experiences.
               </p>
 
               <Link
-                href="#"
+                href={`/jobseeker/company-profile/${job.postedById}`}
                 className="text-[#142175] text-xs md:text-sm font-semibold flex items-center gap-1 hover:underline"
               >
                 View Company Profile

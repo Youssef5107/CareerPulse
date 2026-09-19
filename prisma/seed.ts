@@ -180,7 +180,7 @@ async function main() {
   console.log("Cleaning old jobs...");
   await prisma.job.deleteMany({});
 
-  console.log("Seeding database with lower count closed jobs...");
+  console.log("Seeding database with active and closed jobs...");
 
   const employer = await prisma.user.upsert({
     where: { email: "employer@seed.com" },
@@ -207,6 +207,7 @@ async function main() {
 
       const benefitCount = 3 + Math.floor(Math.random() * 3);
       const benefits = getRandomItems(globalBenefitsPool, benefitCount);
+      const isClosed = i % 3 === 0;
 
       jobsToCreate.push({
         title,
@@ -218,8 +219,8 @@ async function main() {
         description: `We are looking for an experienced ${title} to join our fast-growing team at ${company}. You will be driving core product strategy, leading engineering and design efforts, and building scalable modern web applications. Ideal candidates have 3+ years of experience in high-growth startup environments.`,
         requirements,
         benefits,
-        isExpired: true,
-        status: "CLOSED" as const,
+        isExpired: isClosed,
+        status: isClosed ? ("CLOSED" as const) : ("ACTIVE" as const),
         postedById: employer.id,
       });
     }

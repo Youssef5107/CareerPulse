@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { showToast } from "@/store/features/toast/toastSlice";
-import ConfirmationMessage from "@/app/components/ConfirmationMessage";
 
 interface ApplyButtonProps {
   jobId: string;
@@ -17,9 +16,6 @@ export default function ApplyButton({
 }: ApplyButtonProps) {
   const [hasApplied, setHasApplied] = useState(initialHasApplied);
   const [loading, setLoading] = useState(false);
-  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
-    null,
-  );
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -51,7 +47,12 @@ export default function ApplyButton({
       }
 
       setHasApplied(true);
-      setConfirmationMessage("Your application was submitted successfully.");
+      dispatch(
+        showToast({
+          message: "Your application was submitted successfully.",
+          variant: "success",
+        }),
+      );
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -72,41 +73,32 @@ export default function ApplyButton({
   };
 
   return (
-    <>
-      {confirmationMessage && (
-        <ConfirmationMessage
-          key={confirmationMessage}
-          message={confirmationMessage}
-          onDismiss={() => setConfirmationMessage(null)}
-        />
+    <button
+      onClick={handleApply}
+      disabled={hasApplied || loading}
+      className={`text-sm font-semibold h-11 px-6 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center gap-2 ${
+        hasApplied
+          ? "bg-emerald-600 text-white cursor-default opacity-90"
+          : "bg-[#142175] text-white hover:bg-[#2e3a8c] active:scale-[0.98] disabled:opacity-60"
+      }`}
+    >
+      {loading ? (
+        <span>Applying...</span>
+      ) : hasApplied ? (
+        <>
+          <span className="material-symbols-outlined text-lg">
+            check_circle
+          </span>
+          <span>Applied</span>
+        </>
+      ) : (
+        <>
+          <span>Apply Now</span>
+          <span className="material-symbols-outlined text-lg">
+            arrow_forward
+          </span>
+        </>
       )}
-      <button
-        onClick={handleApply}
-        disabled={hasApplied || loading}
-        className={`text-sm font-semibold h-11 px-6 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center gap-2 ${
-          hasApplied
-            ? "bg-emerald-600 text-white cursor-default opacity-90"
-            : "bg-[#142175] text-white hover:bg-[#2e3a8c] active:scale-[0.98] disabled:opacity-60"
-        }`}
-      >
-        {loading ? (
-          <span>Applying...</span>
-        ) : hasApplied ? (
-          <>
-            <span className="material-symbols-outlined text-lg">
-              check_circle
-            </span>
-            <span>Applied</span>
-          </>
-        ) : (
-          <>
-            <span>Apply Now</span>
-            <span className="material-symbols-outlined text-lg">
-              arrow_forward
-            </span>
-          </>
-        )}
-      </button>
-    </>
+    </button>
   );
 }

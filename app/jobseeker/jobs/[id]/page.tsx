@@ -34,7 +34,7 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
     notFound();
   }
 
-  if (job.status !== "ACTIVE" && session?.user?.id !== job.postedById) {
+  if (job.status === "DRAFT" && session?.user?.id !== job.postedById) {
     notFound();
   }
 

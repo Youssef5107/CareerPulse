@@ -46,13 +46,26 @@ export async function POST(req: Request) {
     // 1. Fetch job to retrieve employer's user ID and job title
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { id: true, title: true, postedById: true },
+      select: {
+        id: true,
+        title: true,
+        postedById: true,
+        status: true,
+        isExpired: true,
+      },
     });
 
     if (!job) {
       return NextResponse.json(
         { error: "Job posting not found." },
         { status: 404 },
+      );
+    }
+
+    if (job.status === "CLOSED" || job.isExpired) {
+      return NextResponse.json(
+        { error: "This job is closed and no longer accepting applications." },
+        { status: 403 },
       );
     }
 

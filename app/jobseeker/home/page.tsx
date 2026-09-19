@@ -17,7 +17,11 @@ const categoryMetadata: Record<string, { icon: string; bg: string }> = {
 
 export default async function JobSeekerHomePage() {
   const rawJobs = await prisma.job.findMany({
-    where: { status: "ACTIVE" },
+    where: {
+      status: {
+        in: ["ACTIVE", "CLOSED"],
+      },
+    },
     select: {
       category: true,
     },

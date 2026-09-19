@@ -16,6 +16,7 @@ export default async function SavedJobsPage() {
   const savedJobs = await prisma.savedJob.findMany({
     where: {
       userId: session.user.id,
+      job: { status: "ACTIVE" },
     },
     include: {
       job: true,

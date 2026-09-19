@@ -19,6 +19,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   const jobs = await prisma.job.findMany({
     where: {
+      status: "ACTIVE",
       AND: [
         query
           ? {

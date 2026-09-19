@@ -39,11 +39,16 @@ export default function PostJobReviewPage() {
         locationType: jobData.locationType?.toUpperCase(),
       };
 
-      const response = await fetch("/api/employer/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        jobData.editingJobId
+          ? `/api/employer/posts/${jobData.editingJobId}`
+          : "/api/employer/posts",
+        {
+          method: jobData.editingJobId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, status: "ACTIVE" }),
+        },
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -62,7 +67,7 @@ export default function PostJobReviewPage() {
         }),
       );
       dispatch(resetJobPostForm());
-      router.push("/employer/jobs");
+      router.push("/employer/postings");
     } catch (error: unknown) {
       console.error("Error submitting job:", error);
       const errorMessage =

@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateJobDetails } from "@/store/features/jobPost/jobPostSlice";
 import { showToast } from "@/store/features/toast/toastSlice";
@@ -10,6 +11,51 @@ export default function PostJobPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const formData = useAppSelector((state) => state.jobPost);
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const loadedEditId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!editId || loadedEditId.current === editId) return;
+    loadedEditId.current = editId;
+
+    fetch(`/api/employer/posts/${editId}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Unable to load this draft.");
+        return response.json();
+      })
+      .then((job) => {
+        dispatch(
+          updateJobDetails({
+            editingJobId: job.id,
+            title: job.title,
+            department: job.category,
+            employmentType: job.type.toLowerCase().replace("_", "-"),
+            locationType: job.locationType.toLowerCase(),
+            location: job.location,
+            salaryMin: job.salary.match(/\$(\d+)/)?.[1] || "",
+            salaryMax: job.salary.match(/- \$(\d+)/)?.[1] || "",
+            companyName: job.company,
+            description: job.description,
+            companyOverview: job.companyOverview || "",
+            benefits: job.benefits,
+            visibility: job.visibility,
+            expirationDate: job.expirationDate
+              ? new Date(job.expirationDate).toISOString().slice(0, 10)
+              : "",
+          }),
+        );
+      })
+      .catch(() => {
+        dispatch(
+          showToast({
+            message: "Unable to load this draft.",
+            variant: "error",
+          }),
+        );
+        router.replace("/employer/postings");
+      });
+  }, [dispatch, editId, router]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,

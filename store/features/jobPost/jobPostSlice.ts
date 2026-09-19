@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface JobPostState {
+  editingJobId: string | null;
   // Step 1 Details
   title: string;
   department: string;
@@ -20,6 +21,7 @@ export interface JobPostState {
 }
 
 const initialState: JobPostState = {
+  editingJobId: null,
   title: "",
   department: "",
   employmentType: "",

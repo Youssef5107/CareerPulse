@@ -68,6 +68,7 @@ export async function POST(req: Request) {
         salary: formattedSalary,
         benefits: Array.isArray(body.benefits) ? body.benefits : [],
         visibility: body.visibility || "PUBLIC",
+        status: "ACTIVE",
         expirationDate: body.expirationDate
           ? new Date(body.expirationDate)
           : null,

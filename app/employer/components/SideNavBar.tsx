@@ -26,6 +26,11 @@ export default function SideNavBar({
     {
       label: "Post a Job",
       href: "/employer/post-job/job-details",
+      activePaths: [
+        "/employer/post-job/job-details",
+        "/employer/post-job/job-description",
+        "/employer/post-job/job-review",
+      ],
       icon: "add_circle",
     },
     { label: "Applicants", href: "/employer/applicants", icon: "group" },
@@ -41,8 +46,12 @@ export default function SideNavBar({
     },
     { label: "Settings", href: "/employer/settings", icon: "settings" },
   ];
-  const isPathActive = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+  const isPathActive = (item: (typeof navItems)[number]) => {
+    const paths = item.activePaths ?? [item.href];
+    return paths.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    );
+  };
 
   return (
     <>
@@ -101,7 +110,7 @@ export default function SideNavBar({
           {/* Navigation Links */}
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = isPathActive(item.href);
+              const isActive = isPathActive(item);
               return (
                 <Link
                   key={item.href}

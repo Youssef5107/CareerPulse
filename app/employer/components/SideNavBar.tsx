@@ -30,6 +30,11 @@ export default function SideNavBar({
     },
     { label: "Applicants", href: "/employer/applicants", icon: "group" },
     {
+      label: "Company Profile",
+      href: "/employer/company-profile",
+      icon: "business",
+    },
+    {
       label: "Notifications",
       href: "/employer/notifications",
       icon: "notifications",

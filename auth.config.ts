@@ -52,6 +52,7 @@ export const authConfig = {
           "/jobseeker/help",
           "/jobseeker/categories",
           "/jobseeker/jobs",
+          "/jobseeker/company-profile",
         ].some(matchesRoute);
 
         if (!isKnownRoute) {
@@ -73,6 +74,7 @@ export const authConfig = {
           "/employer/postings",
           "/employer/post-job",
           "/employer/applicants",
+          "/employer/company-profile",
           "/employer/notifications",
           "/employer/settings",
           "/employer/help",

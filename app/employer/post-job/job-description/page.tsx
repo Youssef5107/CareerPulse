@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateJobDetails } from "@/store/features/jobPost/jobPostSlice";
@@ -10,6 +10,7 @@ export default function PostJobDescriptionPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const formData = useAppSelector((state) => state.jobPost);
+  const [customBenefit, setCustomBenefit] = useState("");
 
   // Protection Guard: Redirect to step 1 if step 1 is incomplete
   useEffect(() => {
@@ -24,6 +25,13 @@ export default function PostJobDescriptionPage() {
       : [...formData.benefits, benefit];
 
     dispatch(updateJobDetails({ benefits: updatedBenefits }));
+  };
+
+  const handleAddCustomBenefit = () => {
+    const benefit = customBenefit.trim();
+    if (!benefit || formData.benefits.includes(benefit)) return;
+    dispatch(updateJobDetails({ benefits: [...formData.benefits, benefit] }));
+    setCustomBenefit("");
   };
 
   const handleContinue = (e: React.FormEvent) => {
@@ -188,6 +196,58 @@ export default function PostJobDescriptionPage() {
                     </div>
                   </label>
                 ))}
+                {formData.benefits
+                  .filter(
+                    (benefit) =>
+                      ![
+                        "Health Insurance",
+                        "401(k) Contribution",
+                        "Remote Work Options",
+                        "Unlimited PTO",
+                      ].includes(benefit),
+                  )
+                  .map((benefit) => (
+                    <label
+                      key={benefit}
+                      className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 transition-colors hover:bg-slate-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked
+                        onChange={() => handleBenefitToggle(benefit)}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <span className="block text-sm font-semibold text-slate-800">
+                          {benefit}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-slate-400">
+                          Custom benefit
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={customBenefit}
+                  onChange={(event) => setCustomBenefit(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleAddCustomBenefit();
+                    }
+                  }}
+                  placeholder="Add a custom benefit"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomBenefit}
+                  className="rounded-xl border border-blue-600 px-4 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50"
+                >
+                  Add benefit
+                </button>
               </div>
             </div>
 

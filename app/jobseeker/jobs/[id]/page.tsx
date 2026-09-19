@@ -34,6 +34,10 @@ export default async function JobDetailPage({ params }: JobDetailsPageProps) {
     notFound();
   }
 
+  if (job.status !== "ACTIVE" && session?.user?.id !== job.postedById) {
+    notFound();
+  }
+
   const companyName = job.postedBy.companyName || job.company;
 
   const isClosed =

@@ -163,6 +163,17 @@ export default function EmployerPostingsPage() {
               >
                 {job.title}
               </Link>
+              {job.status === "DRAFT" && (
+                <Link
+                  href={`/employer/post-job/job-details?edit=${job.id}`}
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-secondary hover:underline"
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    edit
+                  </span>
+                  Edit draft
+                </Link>
+              )}
               <p className="text-sm text-on-surface-variant flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px]">
                   location_on

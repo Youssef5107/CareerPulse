@@ -19,6 +19,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const jobs = await prisma.job.findMany({
     where: {
+      status: "ACTIVE",
       category: {
         equals: categoryName,
         mode: "insensitive",

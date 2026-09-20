@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { invalidateCached, PUBLIC_JOBS_CACHE_KEY } from "@/lib/redis";
 
 interface RouteParams {
   params: Promise<{ "post-id": string }>;
@@ -106,6 +107,11 @@ export async function PUT(request: Request, context: RouteParams) {
       data,
     });
 
+    await Promise.all([
+      invalidateCached(PUBLIC_JOBS_CACHE_KEY),
+      invalidateCached(`cache:employer:posts:${session.user.id}`),
+    ]);
+
     return NextResponse.json(updatedJob);
   } catch (error) {
     console.error("Error editing post:", error);
@@ -145,6 +151,11 @@ export async function PATCH(request: Request, context: RouteParams) {
       where: { id: postId },
       data: { status },
     });
+
+    await Promise.all([
+      invalidateCached(PUBLIC_JOBS_CACHE_KEY),
+      invalidateCached(`cache:employer:posts:${session.user.id}`),
+    ]);
 
     return NextResponse.json(updatedJob);
   } catch (error) {

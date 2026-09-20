@@ -1,10 +1,8 @@
 import React from "react";
-import { PrismaClient } from "@/app/generated/prisma";
 import Link from "next/link";
 import SearchBar from "../components/SearchBar";
 import RecentlyViewed from "../components/RecentlyViewed";
-
-const prisma = new PrismaClient();
+import { getPublicJobs } from "@/lib/public-jobs";
 
 const categoryMetadata: Record<string, { icon: string; bg: string }> = {
   design: { icon: "palette", bg: "bg-blue-50 text-blue-600" },
@@ -17,16 +15,7 @@ const categoryMetadata: Record<string, { icon: string; bg: string }> = {
 };
 
 export default async function JobSeekerHomePage() {
-  const rawJobs = await prisma.job.findMany({
-    where: {
-      status: {
-        in: ["ACTIVE", "CLOSED"],
-      },
-    },
-    select: {
-      category: true,
-    },
-  });
+  const rawJobs = await getPublicJobs();
 
   const categoryMap = rawJobs.reduce<
     Record<string, { displayName: string; count: number }>

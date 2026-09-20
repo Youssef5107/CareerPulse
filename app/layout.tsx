@@ -1,5 +1,4 @@
 import { ReduxProvider } from "@/store/provider";
-import NavigationLoading from "./components/NavigationLoading";
 import Toast from "./components/Toast";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -34,7 +33,6 @@ export default function RootLayout({
       <body>
         <ReduxProvider>
           {children}
-          <NavigationLoading />
           <Toast />
         </ReduxProvider>
       </body>

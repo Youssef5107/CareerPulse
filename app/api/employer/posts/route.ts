@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  getCached,
+  setCached,
+  invalidateCached,
+  PUBLIC_JOBS_CACHE_KEY,
+} from "@/lib/redis";
 
 export async function POST(req: Request) {
   try {
@@ -76,6 +82,12 @@ export async function POST(req: Request) {
       },
     });
 
+    // Invalidate both public search feed and this employer's posts cache
+    await Promise.all([
+      invalidateCached(PUBLIC_JOBS_CACHE_KEY),
+      invalidateCached(`cache:employer:posts:${session.user.id}`),
+    ]);
+
     // 5. Non-blocking notification dispatch for relevant job seekers
     try {
       const notifiedSeekers = await prisma.user.findMany({
@@ -126,6 +138,15 @@ export async function GET() {
       );
     }
 
+    const cacheKey = `cache:employer:posts:${session.user.id}`;
+
+    // 1. Try reading employer's postings from Redis cache
+    const cachedPostings = await getCached(cacheKey);
+    if (cachedPostings) {
+      return NextResponse.json(cachedPostings);
+    }
+
+    // 2. Query Neon DB on cache miss
     const rawJobs = await prisma.job.findMany({
       where: { postedById: session.user.id },
       include: {
@@ -151,6 +172,9 @@ export async function GET() {
       newApplicants: job.applications.filter((app) => app.status === "PENDING")
         .length,
     }));
+
+    // 3. Cache the processed postings list
+    await setCached(cacheKey, postings);
 
     return NextResponse.json(postings);
   } catch (error) {

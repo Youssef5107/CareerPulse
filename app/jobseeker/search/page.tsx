@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { PrismaClient } from "@/app/generated/prisma";
 import BookmarkIcon from "../components/BookmarkIcon";
 import { auth } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { getPublicJobs } from "@/lib/public-jobs";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -17,30 +16,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { query, location, category } = await searchParams;
   const session = await auth();
 
-  const jobs = await prisma.job.findMany({
-    where: {
-      status: {
-        in: ["ACTIVE", "CLOSED"],
-      },
-      AND: [
-        query
-          ? {
-              OR: [
-                { title: { contains: query, mode: "insensitive" } },
-                { company: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-              ],
-            }
-          : {},
-        location
-          ? { location: { contains: location, mode: "insensitive" } }
-          : {},
-        category ? { category: { equals: category, mode: "insensitive" } } : {},
-      ],
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+  const publicJobs = await getPublicJobs();
+  const normalizedQuery = query?.trim().toLowerCase();
+  const normalizedLocation = location?.trim().toLowerCase();
+  const normalizedCategory = category?.trim().toLowerCase();
+
+  const jobs = publicJobs.filter((job) => {
+    const matchesQuery =
+      !normalizedQuery ||
+      [job.title, job.company, job.description].some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
+      );
+    const matchesLocation =
+      !normalizedLocation ||
+      job.location.toLowerCase().includes(normalizedLocation);
+    const matchesCategory =
+      !normalizedCategory || job.category.toLowerCase() === normalizedCategory;
+
+    return matchesQuery && matchesLocation && matchesCategory;
   });
 
   let savedJobIds: string[] = [];

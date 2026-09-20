@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import { getPublicCompanyProfile } from "@/lib/public-company";
 
 interface CompanyProfilePageProps {
   params: Promise<{ id: string }>;
@@ -12,25 +10,7 @@ export default async function CompanyProfilePage({
   params,
 }: CompanyProfilePageProps) {
   const { id } = await params;
-  const employer = await prisma.user.findUnique({
-    where: { id },
-    select: {
-      companyName: true,
-      name: true,
-      companyProfile: {
-        select: {
-          overview: true,
-          history: true,
-          targetCustomers: true,
-          mission: true,
-          industry: true,
-          website: true,
-          headquarters: true,
-          companySize: true,
-        },
-      },
-    },
-  });
+  const employer = await getPublicCompanyProfile(id);
 
   if (!employer) {
     notFound();

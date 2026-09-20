@@ -1,10 +1,9 @@
 // app/jobseeker/categories/[category]/page.tsx
-import { PrismaClient } from "@/app/generated/prisma";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getPublicJobs } from "@/lib/public-jobs";
 import BookmarkIcon from "../../components/BookmarkIcon";
-
-const prisma = new PrismaClient();
 
 interface CategoryPageProps {
   params: Promise<{
@@ -17,20 +16,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const categoryName = decodeURIComponent(rawCategory);
   const session = await auth();
 
-  const jobs = await prisma.job.findMany({
-    where: {
-      status: {
-        in: ["ACTIVE", "CLOSED"],
-      },
-      category: {
-        equals: categoryName,
-        mode: "insensitive",
-      },
-    },
-    orderBy: {
-      postedAt: "desc",
-    },
-  });
+  const publicJobs = await getPublicJobs();
+  const jobs = publicJobs.filter(
+    (job) => job.category.toLowerCase() === categoryName.toLowerCase(),
+  );
 
   let savedJobIds = new Set<string>();
   if (session?.user?.id) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { invalidateCached } from "@/lib/redis";
 
 const profileFields = {
   overview: true,
@@ -59,6 +60,8 @@ export async function PATCH(request: Request) {
       update: data,
       select: profileFields,
     });
+
+    await invalidateCached(`cache:company-profile:${userId}`);
 
     return NextResponse.json(profile);
   } catch {

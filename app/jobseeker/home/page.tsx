@@ -13,6 +13,7 @@ const categoryMetadata: Record<string, { icon: string; bg: string }> = {
   data: { icon: "analytics", bg: "bg-teal-50 text-teal-600" },
   sales: { icon: "trending_up", bg: "bg-emerald-50 text-emerald-600" },
   product: { icon: "inventory_2", bg: "bg-amber-50 text-amber-600" },
+  hr: { icon: "groups", bg: "bg-rose-50 text-rose-600" },
 };
 
 export default async function JobSeekerHomePage() {

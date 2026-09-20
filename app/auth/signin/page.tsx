@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { loginWithCredentials } from "@/features/auth";
+import { loginWithCredentials } from "@/actions/auth";
 
 export default function SignInPage() {
   const [state, formAction, isPending] = useActionState(

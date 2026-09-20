@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { signup } from "@/features/auth";
+import { signup } from "@/actions/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function SignUpPage() {

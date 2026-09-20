@@ -6,6 +6,26 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateJobDetails } from "@/store/features/jobPost/jobPostSlice";
 import { showToast } from "@/store/features/toast/toastSlice";
+import SelectDropdown, {
+  type SelectOption,
+} from "../../components/SelectDropdown";
+
+const departmentOptions: SelectOption[] = [
+  { value: "engineering", label: "Engineering", icon: "code" },
+  { value: "design", label: "Design", icon: "palette" },
+  { value: "marketing", label: "Marketing", icon: "campaign" },
+  { value: "data", label: "Data", icon: "analytics" },
+  { value: "sales", label: "Sales", icon: "trending_up" },
+  { value: "product", label: "Products", icon: "inventory_2" },
+  { value: "hr", label: "Human Resources", icon: "groups" },
+];
+
+const employmentTypeOptions: SelectOption[] = [
+  { value: "full-time", label: "Full-time", icon: "schedule" },
+  { value: "part-time", label: "Part-time", icon: "schedule" },
+  { value: "contract", label: "Contract", icon: "description" },
+  { value: "internship", label: "Internship", icon: "school" },
+];
 
 export default function PostJobPage() {
   const router = useRouter();
@@ -57,10 +77,12 @@ export default function PostJobPage() {
       });
   }, [dispatch, editId, router]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    dispatch(updateJobDetails({ [name]: value }));
+  };
+
+  const handleDropdownChange = (name: string, value: string) => {
     dispatch(updateJobDetails({ [name]: value }));
   };
 
@@ -153,27 +175,14 @@ export default function PostJobPage() {
                 >
                   Department
                 </label>
-                <div className="relative">
-                  <select
-                    id="department"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    className="w-full appearance-none px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition pr-10"
-                  >
-                    <option value="" disabled>
-                      Select department
-                    </option>
-                    <option value="engineering">Engineering</option>
-                    <option value="design">Design</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="sales">Sales</option>
-                    <option value="hr">Human Resources</option>
-                  </select>
-                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    expand_more
-                  </span>
-                </div>
+                <SelectDropdown
+                  id="department"
+                  name="department"
+                  value={formData.department}
+                  placeholder="Select department"
+                  options={departmentOptions}
+                  onChange={handleDropdownChange}
+                />
               </div>
 
               <div className="space-y-2">
@@ -183,27 +192,14 @@ export default function PostJobPage() {
                 >
                   Employment Type <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <select
-                    id="employmentType"
-                    name="employmentType"
-                    value={formData.employmentType}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full appearance-none px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition pr-10"
-                  >
-                    <option value="" disabled>
-                      Select type
-                    </option>
-                    <option value="full-time">Full-time</option>
-                    <option value="part-time">Part-time</option>
-                    <option value="contract">Contract</option>
-                    <option value="internship">Internship</option>
-                  </select>
-                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    expand_more
-                  </span>
-                </div>
+                <SelectDropdown
+                  id="employmentType"
+                  name="employmentType"
+                  value={formData.employmentType}
+                  placeholder="Select type"
+                  options={employmentTypeOptions}
+                  onChange={handleDropdownChange}
+                />
               </div>
             </div>
 

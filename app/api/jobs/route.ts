@@ -1,14 +1,20 @@
+// app/api/jobs/route.ts
 import { NextResponse } from "next/server";
-import { getPublicJobs } from "@/lib/public-jobs";
-import { getCached, PUBLIC_JOBS_CACHE_KEY } from "@/lib/redis";
+import { prisma } from "@/lib/prisma";
+import {
+  redis,
+  getCached,
+  setCached,
+  PUBLIC_JOBS_CACHE_KEY,
+} from "@/lib/redis";
 
-// GET: Fetch all public listings for job seekers, excluding drafts
+// Define the type directly if needed for client responses
+export type PublicJob = Awaited<ReturnType<typeof prisma.job.findMany>>[number];
+
 export async function GET() {
   try {
-    // 1. Attempt to retrieve cached job feed from Redis
-    const cachedJobs = await getCached<
-      Awaited<ReturnType<typeof getPublicJobs>>
-    >(PUBLIC_JOBS_CACHE_KEY);
+    // 1. Check Redis Cache
+    const cachedJobs = await getCached<PublicJob[]>(PUBLIC_JOBS_CACHE_KEY);
 
     if (cachedJobs) {
       return NextResponse.json(cachedJobs, {
@@ -16,8 +22,18 @@ export async function GET() {
       });
     }
 
-    // 2. Fetch fresh job data from Neon PostgreSQL on cache miss
-    const publicJobs = await getPublicJobs();
+    // 2. Query Neon PostgreSQL on cache miss
+    const publicJobs = await prisma.job.findMany({
+      where: {
+        status: {
+          in: ["ACTIVE", "CLOSED"],
+        },
+      },
+      orderBy: { postedAt: "desc" },
+    });
+
+    // 3. Write back to Redis
+    await setCached(PUBLIC_JOBS_CACHE_KEY, publicJobs);
 
     return NextResponse.json(publicJobs, {
       headers: { "X-Cache": "MISS" },

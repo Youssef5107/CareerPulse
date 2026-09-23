@@ -1,7 +1,8 @@
+// app/api/company-profile/route.ts
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { invalidateCached } from "@/lib/redis";
+import { getCached, setCached, invalidateCached } from "@/lib/redis";
 
 const profileFields = {
   overview: true,
@@ -27,12 +28,30 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const cacheKey = `cache:company-profile:${userId}`;
+
+  // 1. Try Redis cache first
+  const cachedProfile = await getCached(cacheKey);
+  if (cachedProfile) {
+    return NextResponse.json(cachedProfile, {
+      headers: { "X-Cache": "HIT" },
+    });
+  }
+
+  // 2. Fetch from database on cache miss
   const profile = await prisma.companyProfile.findUnique({
     where: { userId },
     select: profileFields,
   });
 
-  return NextResponse.json(profile ?? {});
+  const responseData = profile ?? {};
+
+  // 3. Cache the result
+  await setCached(cacheKey, responseData);
+
+  return NextResponse.json(responseData, {
+    headers: { "X-Cache": "MISS" },
+  });
 }
 
 export async function PATCH(request: Request) {
@@ -61,6 +80,7 @@ export async function PATCH(request: Request) {
       select: profileFields,
     });
 
+    // Invalidate Redis cache when updated
     await invalidateCached(`cache:company-profile:${userId}`);
 
     return NextResponse.json(profile);

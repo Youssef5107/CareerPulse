@@ -26,7 +26,7 @@ async function fetchPublicJobs(): Promise<PublicJob[]> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
 
     const res = await fetch(`${baseUrl}/api/jobs`, {
-      cache: "no-store", // Leverages Upstash Redis caching inside the API route handler
+      cache: "no-store",
     });
 
     if (!res.ok) {

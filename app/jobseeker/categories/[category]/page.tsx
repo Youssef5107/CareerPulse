@@ -1,9 +1,44 @@
-// app/jobseeker/categories/[category]/page.tsx
 import Link from "next/link";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getPublicJobs } from "@/lib/public-jobs";
 import BookmarkIcon from "../../components/BookmarkIcon";
+
+interface PublicJob {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  category: string;
+  type: string;
+  salary?: string | null;
+  description?: string;
+  createdAt?: string;
+  status?: string;
+  isExpired?: boolean;
+}
+
+async function fetchPublicJobs(): Promise<PublicJob[]> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") || "localhost:3000";
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+    const res = await fetch(`${baseUrl}/api/jobs`, {
+      cache: "no-store", // Leverages Upstash Redis caching inside the API route handler
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch jobs: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching public jobs:", error);
+    return [];
+  }
+}
 
 interface CategoryPageProps {
   params: Promise<{
@@ -16,9 +51,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const categoryName = decodeURIComponent(rawCategory);
   const session = await auth();
 
-  const publicJobs = await getPublicJobs();
+  const publicJobs = await fetchPublicJobs();
   const jobs = publicJobs.filter(
-    (job) => job.category.toLowerCase() === categoryName.toLowerCase(),
+    (job) =>
+      job.category?.trim().toLowerCase() === categoryName.trim().toLowerCase(),
   );
 
   let savedJobIds = new Set<string>();
@@ -56,71 +92,83 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {jobs.map((job) => {
-          const isClosed =
-            job.isExpired ||
-            (job as unknown as { status?: string }).status === "CLOSED";
-          const isSaved = savedJobIds.has(job.id);
+      {jobs.length === 0 ? (
+        <div className="bg-white rounded-2xl p-12 text-center border border-[#c6c5d3]/30 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+          <span className="material-symbols-outlined text-4xl text-[#767682] mb-2">
+            search_off
+          </span>
+          <h3 className="text-lg font-bold text-[#191c20]">
+            No jobs found in {title}
+          </h3>
+          <p className="text-xs text-[#454651] mt-1">
+            Check back later or explore other categories.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {jobs.map((job) => {
+            const isClosed = job.isExpired || job.status === "CLOSED";
+            const isSaved = savedJobIds.has(job.id);
 
-          return (
-            <Link
-              href={`/jobseeker/jobs/${job.id}`}
-              key={job.id}
-              className="w-full bg-white rounded-2xl p-5 border border-[#c6c5d3]/30 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-[#142175]/30 transition-all flex flex-col justify-between group relative"
-            >
-              <div className="w-full">
-                {/* Header Row */}
-                <div className="flex items-start justify-between gap-3 mb-3 w-full">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 rounded-xl bg-[#e7e8ee] text-[#454651] flex items-center justify-center font-bold text-sm shrink-0">
-                      {job.company.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors leading-snug">
-                          {job.title}
-                        </h3>
-
-                        {/* Closed Badge */}
-                        {isClosed && (
-                          <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" />
-                            Closed
-                          </span>
-                        )}
+            return (
+              <Link
+                href={`/jobseeker/jobs/${job.id}`}
+                key={job.id}
+                className="w-full bg-white rounded-2xl p-5 border border-[#c6c5d3]/30 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-[#142175]/30 transition-all flex flex-col justify-between group relative"
+              >
+                <div className="w-full">
+                  {/* Header Row */}
+                  <div className="flex items-start justify-between gap-3 mb-3 w-full">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-10 h-10 rounded-xl bg-[#e7e8ee] text-[#454651] flex items-center justify-center font-bold text-sm shrink-0">
+                        {job.company.slice(0, 2).toUpperCase()}
                       </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-[#191c20] text-base truncate group-hover:text-[#142175] transition-colors leading-snug">
+                            {job.title}
+                          </h3>
 
-                      <p className="text-xs text-[#454651] truncate mt-0.5">
-                        {job.company} • {job.location}
-                      </p>
+                          {/* Closed Badge */}
+                          {isClosed && (
+                            <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" />
+                              Closed
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-[#454651] truncate mt-0.5">
+                          {job.company} • {job.location}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0">
+                      <BookmarkIcon jobId={job.id} initialIsSaved={isSaved} />
                     </div>
                   </div>
 
-                  <div className="shrink-0">
-                    <BookmarkIcon jobId={job.id} initialIsSaved={isSaved} />
+                  {/* Tags Row */}
+                  <div className="flex flex-wrap gap-1.5 my-3">
+                    {job.salary && (
+                      <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+                        {job.salary}
+                      </span>
+                    )}
+                    <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
+                      {job.type}
+                    </span>
+                    <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
+                      {job.category}
+                    </span>
                   </div>
                 </div>
-
-                {/* Tags Row */}
-                <div className="flex flex-wrap gap-1.5 my-3">
-                  {job.salary && (
-                    <span className="bg-[#eff4ff] text-[#142175] text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
-                      {job.salary}
-                    </span>
-                  )}
-                  <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
-                    {job.type}
-                  </span>
-                  <span className="bg-[#f8f9ff] text-[#454651] text-[11px] font-medium px-2.5 py-0.5 rounded-md border border-[#c6c5d3]/30 capitalize">
-                    {job.category}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          );
-        })}{" "}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

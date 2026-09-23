@@ -1,8 +1,44 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import BookmarkIcon from "../components/BookmarkIcon";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getPublicJobs } from "@/lib/public-jobs";
+
+interface PublicJob {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  category: string;
+  type: string;
+  salary?: string | null;
+  description: string;
+  createdAt: string;
+  status?: string;
+  isExpired?: boolean;
+}
+
+async function fetchPublicJobs(): Promise<PublicJob[]> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") || "localhost:3000";
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+    const res = await fetch(`${baseUrl}/api/jobs`, {
+      cache: "no-store", // Leverages Upstash Redis caching inside the API route handler
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch jobs: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching public jobs:", error);
+    return [];
+  }
+}
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -16,7 +52,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { query, location, category } = await searchParams;
   const session = await auth();
 
-  const publicJobs = await getPublicJobs();
+  const publicJobs = await fetchPublicJobs();
   const normalizedQuery = query?.trim().toLowerCase();
   const normalizedLocation = location?.trim().toLowerCase();
   const normalizedCategory = category?.trim().toLowerCase();
@@ -25,13 +61,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const matchesQuery =
       !normalizedQuery ||
       [job.title, job.company, job.description].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
+        value?.toLowerCase().includes(normalizedQuery),
       );
     const matchesLocation =
       !normalizedLocation ||
-      job.location.toLowerCase().includes(normalizedLocation);
+      job.location?.toLowerCase().includes(normalizedLocation);
     const matchesCategory =
-      !normalizedCategory || job.category.toLowerCase() === normalizedCategory;
+      !normalizedCategory || job.category?.toLowerCase() === normalizedCategory;
 
     return matchesQuery && matchesLocation && matchesCategory;
   });
@@ -82,8 +118,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             {jobs.map((job) => {
               const isSaved = savedJobIds.includes(job.id);
               const isClosed =
-                (job as unknown as { status?: string }).status === "CLOSED" ||
-                (job as unknown as { isExpired?: boolean }).isExpired === true;
+                job.status === "CLOSED" || job.isExpired === true;
 
               return (
                 <Link

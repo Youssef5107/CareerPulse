@@ -1,8 +1,37 @@
 import React from "react";
 import Link from "next/link";
+import { headers } from "next/headers";
 import SearchBar from "../components/SearchBar";
 import RecentlyViewed from "../components/RecentlyViewed";
-import { getPublicJobs } from "@/lib/public-jobs";
+
+interface Job {
+  id: string;
+  category?: string | null;
+  status: string;
+  postedAt: string;
+}
+
+async function fetchPublicJobs(): Promise<Job[]> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") || "localhost:3000";
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+    const res = await fetch(`${baseUrl}/api/jobs`, {
+      cache: "no-store", // Leverages Upstash Redis caching inside the API route handler
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch jobs: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching public jobs feed:", error);
+    return [];
+  }
+}
 
 const categoryMetadata: Record<string, { icon: string; bg: string }> = {
   design: { icon: "palette", bg: "bg-blue-50 text-blue-600" },
@@ -15,7 +44,7 @@ const categoryMetadata: Record<string, { icon: string; bg: string }> = {
 };
 
 export default async function JobSeekerHomePage() {
-  const rawJobs = await getPublicJobs();
+  const rawJobs = await fetchPublicJobs();
 
   const categoryMap = rawJobs.reduce<
     Record<string, { displayName: string; count: number }>

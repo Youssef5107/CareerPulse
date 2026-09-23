@@ -1,9 +1,32 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPublicCompanyProfile } from "@/lib/public-company";
+import { headers } from "next/headers";
 
 interface CompanyProfilePageProps {
   params: Promise<{ id: string }>;
+}
+
+async function getPublicCompanyProfile(id: string) {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") || "localhost:3000";
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+    const res = await fetch(`${baseUrl}/api/company-profile/${id}`, {
+      cache: "no-store", // Ensures we rely on Upstash Redis headers / backend cache
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error(`Failed to fetch profile: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching company profile:", error);
+    return null;
+  }
 }
 
 export default async function CompanyProfilePage({

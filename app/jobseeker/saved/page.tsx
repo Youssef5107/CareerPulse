@@ -1,10 +1,8 @@
 // app/jobseeker/saved/page.tsx
-import { PrismaClient } from "@/app/generated/prisma";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import SavedJobsClient from "./SavedJobsClient";
-
-const prisma = new PrismaClient();
 
 export default async function SavedJobsPage() {
   const session = await auth();

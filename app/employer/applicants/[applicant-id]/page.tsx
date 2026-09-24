@@ -32,6 +32,7 @@ interface ApplicantDetailData {
   status: string;
   appliedAt: string;
   jobTitle: string;
+  interviewId?: string | null;
   candidate: {
     id?: string;
     name: string;
@@ -306,27 +307,19 @@ export default function ApplicantDetailPage() {
                 No CV Uploaded
               </button>
             )}
-            {candidate.email ? (
-              <Link
-                href={`/employer/interviews?applicationId=${applicationId}`}
-                className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5"
-              >
-                <span className="material-symbols-outlined text-base">
-                  calendar_month
-                </span>
-                Schedule Interview
-              </Link>
-            ) : (
-              <button
-                disabled
-                className="bg-slate-300 text-slate-500 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 cursor-not-allowed"
-              >
-                <span className="material-symbols-outlined text-base">
-                  calendar_month
-                </span>
-                Schedule Interview
-              </button>
-            )}
+            <Link
+              href={
+                data?.interviewId
+                  ? `/employer/interviews?interviewId=${data.interviewId}`
+                  : `/employer/interviews?applicationId=${applicationId}`
+              }
+              className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-base">
+                calendar_month
+              </span>
+              Schedule Interview
+            </Link>
           </div>
         </div>
 

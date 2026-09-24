@@ -7,8 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -18,43 +18,45 @@ enum Role {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?   
-  firstName     String?   
-  lastName      String?   
+  name          String?
+  firstName     String?
+  lastName      String?
   email         String?   @unique
   emailVerified DateTime?
-  image         String?   
+  image         String?
   password      String?
 
-  role          Role?
-  companyName   String?
+  role        Role?
+  companyName String?
 
-  profile       Profile?
-  companyProfile CompanyProfile?
-  accounts      Account[]
-  sessions      Session[]
-  jobs          Job[]         @relation("postedJobs")
-  applications  Application[]
-  savedJobs     SavedJob[]
-  notifications Notification[]
+  profile               Profile?
+  companyProfile        CompanyProfile?
+  accounts              Account[]
+  sessions              Session[]
+  jobs                  Job[]           @relation("postedJobs")
+  applications          Application[]
+  interviewsAsEmployer  Interview[]     @relation("employerInterviews")
+  interviewsAsJobSeeker Interview[]     @relation("jobSeekerInterviews")
+  savedJobs             SavedJob[]
+  notifications         Notification[]
 }
 
 model Profile {
-  id             String           @id @default(cuid())
-  userId         String           @unique
-  headline       String?          
-  location       String?       
-  phone          String?        
-  summary        String?          @db.Text
-  skills         String[]         @default([])
-  cvUrl          String?         
-  bannerUrl      String?       
-  recruiterNotes String?          @db.Text
-  matchScore     Int?             @default(90)
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  headline       String?
+  location       String?
+  phone          String?
+  summary        String?  @db.Text
+  skills         String[] @default([])
+  cvUrl          String?
+  bannerUrl      String?
+  recruiterNotes String?  @db.Text
+  matchScore     Int?     @default(90)
 
-  experiences    WorkExperience[]
-  educations     Education[]   
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiences WorkExperience[]
+  educations  Education[]
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CompanyProfile {
@@ -71,32 +73,32 @@ model CompanyProfile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model WorkExperience {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   profileId   String
-  title       String   
-  company     String   
-  location    String? 
-  startDate   String   
-  endDate     String? 
-  description String?  @db.Text
+  title       String
+  company     String
+  location    String?
+  startDate   String
+  endDate     String?
+  description String? @db.Text
 
-  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Education {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   profileId    String
-  institution  String   
-  degree       String   
+  institution  String
+  degree       String
   fieldOfStudy String?
-  startDate    String   
-  endDate      String? 
+  startDate    String
+  endDate      String?
 
-  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -145,8 +147,8 @@ model Job {
   title           String
   company         String
   location        String
-  type            String   
-  category        String   
+  type            String
+  category        String
   locationType    String    @default("onsite")
   description     String    @db.Text
   companyOverview String?   @db.Text
@@ -158,38 +160,77 @@ model Job {
   expirationDate  DateTime?
   isExpired       Boolean   @default(false)
 
-  postedAt        DateTime  @default(now())
-  postedBy        User      @relation("postedJobs", fields: [postedById], references: [id])
-  postedById      String
-  savedBy         SavedJob[]
+  postedAt   DateTime   @default(now())
+  postedBy   User       @relation("postedJobs", fields: [postedById], references: [id])
+  postedById String
+  savedBy    SavedJob[]
 
-  applications    Application[]
-  createdAt   DateTime @default(now())
+  applications Application[]
+  createdAt    DateTime      @default(now())
 }
 
 model SavedJob {
-  id        String   @id @default(cuid())
-  userId    String
-  jobId     String
-  savedAt   DateTime @default(now())
+  id      String   @id @default(cuid())
+  userId  String
+  jobId   String
+  savedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
 }
 
 model Application {
-  id          String   @id @default(cuid())
-  jobId       String
-  userId      String
-  status      String   @default("PENDING")
-  appliedAt   DateTime @default(now())
+  id        String     @id @default(cuid())
+  jobId     String
+  userId    String
+  status    String     @default("PENDING")
+  appliedAt DateTime   @default(now())
+  interview Interview?
 
-  user        User     @relation(fields: [userId], references: [id])
-  job         Job      @relation(fields: [jobId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  job  Job  @relation(fields: [jobId], references: [id])
 
   @@unique([jobId, userId])
+}
+
+enum InterviewMode {
+  ONSITE
+  ONLINE
+}
+
+enum InterviewStatus {
+  PENDING_JOBSEEKER
+  PENDING_EMPLOYER
+  ACCEPTED
+  REJECTED
+}
+
+enum InterviewProposedBy {
+  EMPLOYER
+  JOBSEEKER
+}
+
+model Interview {
+  id            String              @id @default(cuid())
+  applicationId String              @unique
+  employerId    String
+  jobSeekerId   String
+  proposedAt    DateTime
+  mode          InterviewMode
+  details       String              @db.Text
+  status        InterviewStatus     @default(PENDING_JOBSEEKER)
+  proposedBy    InterviewProposedBy @default(EMPLOYER)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  employer    User        @relation("employerInterviews", fields: [employerId], references: [id], onDelete: Cascade)
+  jobSeeker   User        @relation("jobSeekerInterviews", fields: [jobSeekerId], references: [id], onDelete: Cascade)
+
+  @@index([employerId, status])
+  @@index([jobSeekerId, status])
 }
 
 enum NotificationType {
@@ -198,6 +239,8 @@ enum NotificationType {
   NEW_APPLICANT
   APPLICATION_ACCEPTED
   APPLICATION_REJECTED
+  INTERVIEW_PROPOSED
+  INTERVIEW_UPDATED
 }
 
 model Notification {

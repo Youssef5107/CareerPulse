@@ -56,6 +56,12 @@ export default function SideNavBar({
       icon: "notifications",
     },
     {
+      label: "Interviews",
+      href: "/jobseeker/interviews",
+      activePaths: ["/jobseeker/interviews"],
+      icon: "calendar_month",
+    },
+    {
       label: "Settings",
       href: "/jobseeker/settings",
       activePaths: ["/jobseeker/settings"],

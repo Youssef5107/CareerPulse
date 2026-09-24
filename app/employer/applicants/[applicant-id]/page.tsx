@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { showToast } from "@/store/features/toast/toastSlice";
-import ConfirmationMessage from "@/app/components/ConfirmationMessage";
 
 interface Experience {
   id: string;
@@ -58,9 +57,6 @@ export default function ApplicantDetailPage() {
   const [status, setStatus] = useState<string>("PENDING");
   const [loading, setLoading] = useState<boolean>(true);
   const [decisionLoading, setDecisionLoading] = useState(false);
-  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
-    null,
-  );
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -163,8 +159,11 @@ export default function ApplicantDetailPage() {
         );
       }
 
-      setConfirmationMessage(
-        `Application ${newStatus.toLowerCase()} successfully.`,
+      dispatch(
+        showToast({
+          message: `Application ${newStatus.toLowerCase()} successfully.`,
+          variant: "success",
+        }),
       );
     } catch (err) {
       console.error("Failed to update status", err);
@@ -219,13 +218,6 @@ export default function ApplicantDetailPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 font-sans relative flex flex-col">
-      {confirmationMessage && (
-        <ConfirmationMessage
-          key={confirmationMessage}
-          message={confirmationMessage}
-          onDismiss={() => setConfirmationMessage(null)}
-        />
-      )}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
         {/* Back Link */}
         <div className="flex items-center gap-2 mb-2 text-slate-500">

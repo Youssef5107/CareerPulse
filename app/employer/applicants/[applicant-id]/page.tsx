@@ -307,15 +307,15 @@ export default function ApplicantDetailPage() {
               </button>
             )}
             {candidate.email ? (
-              <a
-                href={`mailto:${candidate.email}`}
+              <Link
+                href={`/employer/interviews?applicationId=${applicationId}`}
                 className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-base">
                   calendar_month
                 </span>
                 Schedule Interview
-              </a>
+              </Link>
             ) : (
               <button
                 disabled

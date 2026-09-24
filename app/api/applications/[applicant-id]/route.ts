@@ -23,6 +23,9 @@ export async function GET(request: Request, context: RouteParams) {
       where: { id: applicationId },
       include: {
         job: true,
+        interview: {
+          select: { id: true },
+        },
         user: {
           include: {
             profile: {
@@ -48,6 +51,7 @@ export async function GET(request: Request, context: RouteParams) {
       status: application.status ?? "PENDING",
       appliedAt: application.appliedAt.toISOString(),
       jobTitle: application.job.title,
+      interviewId: application.interview?.id ?? null,
       candidate: {
         name: application.user.name ?? "Anonymous Applicant",
         email: application.user.email ?? "N/A",

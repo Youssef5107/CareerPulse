@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import { useAppDispatch } from "@/store/hooks";
+import { showToast } from "@/store/features/toast/toastSlice";
 
 type Role = "EMPLOYER" | "JOB_SEEKER";
 type Interview = {
@@ -40,6 +42,7 @@ function toInputDate(value?: string) {
 }
 
 export default function InterviewsPage({ role }: { role: Role }) {
+  const dispatch = useAppDispatch();
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [application, setApplication] = useState<Application | null>(null);
   const [form, setForm] = useState({
@@ -49,11 +52,23 @@ export default function InterviewsPage({ role }: { role: Role }) {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [counterInterviewId, setCounterInterviewId] = useState<string | null>(
+    null,
+  );
+  const [counterForm, setCounterForm] = useState({
+    proposedAt: "",
+    mode: "ONLINE",
+    details: "",
+  });
   const [message, setMessage] = useState<string | null>(null);
   const queryApplicationId =
     typeof window === "undefined"
       ? null
       : new URLSearchParams(window.location.search).get("applicationId");
+  const queryInterviewId =
+    typeof window === "undefined"
+      ? null
+      : new URLSearchParams(window.location.search).get("interviewId");
 
   async function load() {
     const response = await fetch("/api/interviews");
@@ -82,6 +97,14 @@ export default function InterviewsPage({ role }: { role: Role }) {
     initialize();
   }, [role, queryApplicationId]);
 
+  useEffect(() => {
+    if (!queryInterviewId || isLoading) return;
+
+    document
+      .getElementById(`interview-${queryInterviewId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [isLoading, queryInterviewId, interviews]);
+
   async function submitEmployerProposal(event: FormEvent) {
     event.preventDefault();
     if (!application || isSaving) return;
@@ -99,15 +122,22 @@ export default function InterviewsPage({ role }: { role: Role }) {
       if (!response.ok)
         throw new Error(result.error || "Unable to schedule interview.");
       setMessage("Interview proposal sent.");
+      dispatch(
+        showToast({
+          message: "Interview time sent successfully.",
+          variant: "success",
+        }),
+      );
       setApplication(null);
       setForm({ proposedAt: "", mode: "ONLINE", details: "" });
       await load();
     } catch (error) {
-      setMessage(
+      const errorMessage =
         error instanceof Error
           ? error.message
-          : "Unable to schedule interview.",
-      );
+          : "Unable to schedule interview.";
+      setMessage(errorMessage);
+      dispatch(showToast({ message: errorMessage, variant: "error" }));
     } finally {
       setIsSaving(false);
     }
@@ -116,40 +146,50 @@ export default function InterviewsPage({ role }: { role: Role }) {
   async function updateInterview(
     id: string,
     action: "ACCEPT" | "REJECT" | "COUNTER",
-    interview?: Interview,
+    counterData?: { proposedAt: string; mode: string; details: string },
   ) {
-    const proposedAt =
-      action === "COUNTER"
-        ? window.prompt(
-            "Enter a new date and time (YYYY-MM-DDTHH:mm):",
-            toInputDate(interview?.proposedAt),
-          )
-        : undefined;
-    if (action === "COUNTER" && !proposedAt) return;
-    const details =
-      action === "COUNTER"
-        ? window.prompt(
-            "Add a note for the employer:",
-            interview?.details || "",
-          )
-        : undefined;
     const response = await fetch(`/api/interviews/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action,
-        proposedAt,
-        details,
-        mode: interview?.mode,
+        proposedAt: counterData?.proposedAt,
+        details: counterData?.details,
+        mode: counterData?.mode,
       }),
     });
     const result = await response.json();
     if (!response.ok) {
-      setMessage(result.error || "Unable to update interview.");
+      const errorMessage = result.error || "Unable to update interview.";
+      setMessage(errorMessage);
+      dispatch(showToast({ message: errorMessage, variant: "error" }));
       return;
     }
-    setMessage("Interview updated.");
+    const successMessage =
+      action === "COUNTER"
+        ? "Your new interview time was sent successfully."
+        : action === "ACCEPT"
+          ? "Interview accepted successfully."
+          : "Interview rejected successfully.";
+    setMessage(successMessage);
+    dispatch(showToast({ message: successMessage, variant: "success" }));
+    setCounterInterviewId(null);
+    setCounterForm({ proposedAt: "", mode: "ONLINE", details: "" });
     await load();
+  }
+
+  async function submitCounterProposal(
+    event: FormEvent<HTMLFormElement>,
+    interviewId: string,
+  ) {
+    event.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await updateInterview(interviewId, "COUNTER", counterForm);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -252,7 +292,12 @@ export default function InterviewsPage({ role }: { role: Role }) {
             {interviews.map((interview) => (
               <article
                 key={interview.id}
-                className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm"
+                id={`interview-${interview.id}`}
+                className={`rounded-2xl border bg-surface-container-lowest p-5 shadow-sm transition-colors ${
+                  queryInterviewId === interview.id
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-outline-variant"
+                }`}
               >
                 <div className="flex flex-col justify-between gap-4 md:flex-row">
                   <div>
@@ -318,16 +363,87 @@ export default function InterviewsPage({ role }: { role: Role }) {
                     </button>
                     {role === "JOB_SEEKER" && (
                       <button
-                        onClick={() =>
-                          updateInterview(interview.id, "COUNTER", interview)
-                        }
+                        type="button"
+                        onClick={() => {
+                          setCounterInterviewId(
+                            counterInterviewId === interview.id
+                              ? null
+                              : interview.id,
+                          );
+                          setCounterForm({
+                            proposedAt: toInputDate(interview.proposedAt),
+                            mode: interview.mode,
+                            details: interview.details,
+                          });
+                        }}
                         className="rounded-xl border border-outline-variant px-4 py-2.5 text-sm font-semibold text-on-surface"
                       >
-                        Suggest another time
+                        {counterInterviewId === interview.id
+                          ? "Close form"
+                          : "Suggest another time"}
                       </button>
                     )}
                   </div>
                 )}
+                {role === "JOB_SEEKER" &&
+                  interview.status === "PENDING_JOBSEEKER" &&
+                  counterInterviewId === interview.id && (
+                    <form
+                      onSubmit={(event) =>
+                        submitCounterProposal(event, interview.id)
+                      }
+                      className="mt-5 space-y-4 rounded-2xl border border-secondary-container bg-surface-container-low p-4"
+                    >
+                      <div>
+                        <h3 className="text-base font-semibold text-on-surface">
+                          Suggest a more suitable time
+                        </h3>
+                        <p className="mt-1 text-sm text-on-surface-variant">
+                          The employer will see your suggestion as pending until
+                          they respond.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-on-surface">
+                          New time
+                          <input
+                            required
+                            type="datetime-local"
+                            value={counterForm.proposedAt}
+                            onChange={(event) =>
+                              setCounterForm({
+                                ...counterForm,
+                                proposedAt: event.target.value,
+                              })
+                            }
+                            className="mt-2 w-full rounded-xl border border-outline-variant bg-surface px-3 py-2.5"
+                          />
+                        </label>
+                      </div>
+                      <label className="block text-sm font-medium text-on-surface">
+                        Additional highlights
+                        <textarea
+                          value={counterForm.details}
+                          onChange={(event) =>
+                            setCounterForm({
+                              ...counterForm,
+                              details: event.target.value,
+                            })
+                          }
+                          rows={4}
+                          placeholder="Share your availability, preferred format, or anything the employer should know"
+                          className="mt-2 w-full rounded-xl border border-outline-variant bg-surface px-3 py-2.5"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-on-primary disabled:opacity-50"
+                      >
+                        {isSaving ? "Sending..." : "Send new time"}
+                      </button>
+                    </form>
+                  )}
               </article>
             ))}
           </div>

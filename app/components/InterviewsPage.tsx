@@ -27,12 +27,21 @@ type Application = {
   candidate: { name: string };
 };
 
-const statusLabels: Record<Interview["status"], string> = {
-  PENDING_JOBSEEKER: "Pending applicant reply",
-  PENDING_EMPLOYER: "Pending employer reply",
-  ACCEPTED: "Accepted",
-  REJECTED: "Rejected",
-};
+function getStatusLabel(status: Interview["status"], role: Role) {
+  if (status === "PENDING_JOBSEEKER") {
+    return role === "EMPLOYER"
+      ? "Pending applicant reply"
+      : "Pending employer reply";
+  }
+
+  if (status === "PENDING_EMPLOYER") {
+    return role === "EMPLOYER"
+      ? "Pending applicant reply"
+      : "Pending employer reply";
+  }
+
+  return status === "ACCEPTED" ? "Accepted" : "Rejected";
+}
 
 function toInputDate(value?: string) {
   if (!value) return "";
@@ -316,7 +325,7 @@ export default function InterviewsPage({ role }: { role: Role }) {
                   <span
                     className={`h-fit rounded-full px-3 py-1.5 text-xs font-semibold ${interview.status === "ACCEPTED" ? "bg-emerald-100 text-emerald-800" : interview.status === "REJECTED" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"}`}
                   >
-                    {statusLabels[interview.status]}
+                    {getStatusLabel(interview.status, role)}
                   </span>
                 </div>
                 <div className="mt-4 grid gap-3 text-sm text-on-surface-variant md:grid-cols-3">

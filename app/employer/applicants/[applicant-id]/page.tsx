@@ -32,6 +32,12 @@ interface ApplicantDetailData {
   appliedAt: string;
   jobTitle: string;
   interviewId?: string | null;
+  interviewStatus?:
+    | "PENDING_JOBSEEKER"
+    | "PENDING_EMPLOYER"
+    | "ACCEPTED"
+    | "REJECTED"
+    | null;
   candidate: {
     id?: string;
     name: string;
@@ -215,6 +221,24 @@ export default function ApplicantDetailPage() {
   }
 
   const { candidate } = data;
+  const hasActiveInterview = Boolean(
+    data.interviewId && data.interviewStatus !== "REJECTED",
+  );
+  const interviewLink = hasActiveInterview
+    ? `/employer/interviews?interviewId=${data.interviewId}`
+    : `/employer/interviews?applicationId=${applicationId}`;
+  const interviewLinkLabel =
+    data.interviewStatus === "ACCEPTED"
+      ? "Scheduled, view time"
+      : hasActiveInterview
+        ? "Pending, view schedule"
+        : "Schedule Interview";
+  const interviewLinkClassName =
+    data.interviewStatus === "ACCEPTED"
+      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+      : hasActiveInterview
+        ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+        : "bg-slate-900 text-white hover:bg-slate-800";
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 font-sans relative flex flex-col">
@@ -300,17 +324,13 @@ export default function ApplicantDetailPage() {
               </button>
             )}
             <Link
-              href={
-                data?.interviewId
-                  ? `/employer/interviews?interviewId=${data.interviewId}`
-                  : `/employer/interviews?applicationId=${applicationId}`
-              }
-              className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+              href={interviewLink}
+              className={`${interviewLinkClassName} px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5`}
             >
               <span className="material-symbols-outlined text-base">
                 calendar_month
               </span>
-              Schedule Interview
+              {interviewLinkLabel}
             </Link>
           </div>
         </div>
